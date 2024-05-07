@@ -1,0 +1,7 @@
+const ROLES = {
+    SUPER_ADMIN: 'SUPER_ADMIN',
+    DEPARTMENT_ADMIN: 'DEPARTMENT_ADMIN',
+    TEACHER: 'TEACHER',
+};
+
+module.exports = {ROLES};

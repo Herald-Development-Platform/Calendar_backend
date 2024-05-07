@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 require('dotenv').config();
 
 // Importing intialization functions
@@ -11,7 +10,7 @@ const app = express();
 // Middleware
 app.use(express.json());
 
-// Load routes and middlewares
+// routes import
 const mainRouter = require('./routes/index.routes');
 const errorHandler = require('./middlewares/error.middleware');
 
@@ -25,9 +24,6 @@ app.use((req, res) => {
 });
 
 connectToMongoDB().then(async () => {
-  console.log(
-    "ADMIN CREATED SUCCESSFULLY!"
-  )
   startServer();
 });
 

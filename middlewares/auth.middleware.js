@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
-const { UserModel } = require('../models/database.models');
+const { UserModel } = require('../models/user.model');
 const { StatusCodes } = require('http-status-codes');
-
+const { ROLES } = require('../constants/role.constants');
 
 const ACCESS_SECRET = process.env.ACCESS_SECRET;
 
@@ -28,8 +28,8 @@ const verifyToken = async (req, res, next) => {
         });
     }
     let user;
-    if (id === '1'){
-        user = await UserModel.findOne({ role: 'Admin' });
+    if (id === '1') {
+        user = await UserModel.findOne({ role: ROLES.SUPER_ADMIN });
     } else {
         user = await UserModel.findById(id);
     }
@@ -43,13 +43,34 @@ const verifyToken = async (req, res, next) => {
     return next();
 };
 
-const checkAdmin = (req, res, next) => {
-    if (req.user?.role?.toLowerCase()?.trim() !== 'admin') {
+const checkSuperAdmin = (req, res, next) => {
+    if (req.user?.role !== ROLES.SUPER_ADMIN) {
         return res.status(StatusCodes.FORBIDDEN).json({
-            message: 'User needs to be admin.',
+            success: false,
+            message: 'User needs to be super admin.',
         });
     }
     return next();
 };
 
-module.exports = { verifyToken, checkAdmin };
+const checkDepartmentAdmin = (req, res, next) => {
+    if (req.user?.role !== ROLES.DEPARTMENT_ADMIN) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+            success: false,
+            message: 'User needs to be department admin.',
+        });
+    }
+    return next();
+};
+
+const checkTeacher = (req, res, next) => {
+    if (req.user?.role !== ROLES.TEACHER) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+            success: false,
+            message: 'User needs to be teacher.',
+        });
+    }
+    return next();
+};
+
+module.exports = { verifyToken, checkSuperAdmin, checkDepartmentAdmin, checkTeacher};

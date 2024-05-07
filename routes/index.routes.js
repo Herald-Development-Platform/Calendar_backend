@@ -3,7 +3,8 @@ const router = require("express").Router();
 // Importing Middlewares
 const {
     verifyToken,
-    checkAdmin
+    checkDepartmentAdmin,
+    checkSuperAdmin
 } = require("../middlewares/auth.middleware");
 
 
