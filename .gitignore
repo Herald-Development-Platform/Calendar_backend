@@ -1,0 +1,9 @@
+.env
+node_modules
+
+database/calendar_data/*
+
+*lock.json
+*lock.yaml
+*lock.yml
+*.log
