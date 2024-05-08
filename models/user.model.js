@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const BaseMongooseSchema = require('./base.schema');
 const { ROLES } = require('../constants/role.constants');
+const { DEPARTMENTS } = require('../constants/departments.constants');
 
 const userSchema = new BaseMongooseSchema({
   email: {
@@ -16,12 +17,17 @@ const userSchema = new BaseMongooseSchema({
     type: String,
     required: true,
   },
-  profilePicture: String,
+  photo: String,
   role: {
     type: String,
     enum: Object.values(ROLES),
     required: true,
   },
+  department: {
+    type: String,
+    enum: Object.values(DEPARTMENTS),
+    required: true,
+  }
 });
 
 const UserModel = mongoose.model('Users', userSchema);

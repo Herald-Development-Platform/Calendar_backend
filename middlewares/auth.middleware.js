@@ -27,12 +27,8 @@ const verifyToken = async (req, res, next) => {
             message: 'Invalid Token!',
         });
     }
-    let user;
-    if (id === '1') {
-        user = await UserModel.findOne({ role: ROLES.SUPER_ADMIN });
-    } else {
-        user = await UserModel.findById(id);
-    }
+    let user = await UserModel.findById(id);
+    
     if (!user) {
         return res.status(StatusCodes.NOT_FOUND).json({
             success: false,

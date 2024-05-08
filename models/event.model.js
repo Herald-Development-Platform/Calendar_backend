@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const BaseMongooseSchema = require('./base.schema');
-
+const {
+    DEPARTMENTS,
+} = require('../constants/departments.constants');
 const eventSchema = new BaseMongooseSchema({
     title: {
         type: String,
@@ -10,19 +12,29 @@ const eventSchema = new BaseMongooseSchema({
         type: String,
         required: true,
     },
+    from: {
+        type: Date,
+        required: true,
+    },
+    to: {
+        type: Date,
+        required: true,
+    },
     date: {
         type: Date,
         required: true,
     },
-    image: String,
     location: {
         type: String,
         required: true,
     },
-    attending: {
-        type: Number,
-        default: 0,
+    department: {
+        type: String,
+        enum: Object.values(DEPARTMENTS),
+        required: true,
     },
+    color: String,
+    notes: String,
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
 
+if (!process.env.MONGODB_URI) {
+    console.error('MongoDB URI is missing');
+    process.exit(1);
+}
+
 // Connect to mongodb
 const connectToMongoDB = async () => {
     try {
