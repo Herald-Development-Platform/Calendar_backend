@@ -12,15 +12,11 @@ const eventSchema = new BaseMongooseSchema({
         type: String,
         required: true,
     },
-    from: {
+    start: {
         type: Date,
         required: true,
     },
-    to: {
-        type: Date,
-        required: true,
-    },
-    date: {
+    end: {
         type: Date,
         required: true,
     },

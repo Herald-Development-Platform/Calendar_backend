@@ -37,7 +37,7 @@ const getEvents = async (req, res, next) => {
     try {
         let events = [];
         if (req.user.role===ROLES.SUPER_ADMIN) {
-            events = await eventModel.find({}).sort({ date: 1 });
+            events = await eventModel.find({}).sort({ start: 1 });
         } else {
             events = await eventModel.find({ $or: [
                 {
