@@ -69,7 +69,7 @@ const deleteEvent = async (req, res, next) => {
             });
         }
 
-        if (req.user.role === ROLES.SUPER_ADMIN || req.user._id === event.createdBy) {
+        if (req.user.role === ROLES.SUPER_ADMIN || req.user._id.toString() === event.createdBy.toString()) {
             const deleted = await eventModel.findByIdAndDelete(event._id);
             return res.status(StatusCodes.OK).json({
                 success: true,
