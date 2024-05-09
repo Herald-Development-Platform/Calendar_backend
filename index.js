@@ -24,6 +24,8 @@ const corsOptions = {
     "http://localhost:9787",
     "https://beta.codynn.com",
     "https://betachallenges.codynn.com",
+    "https://calendar.codynn.com",
+    "http://localhost:7575",
   ],
   credentials: true,
 };
