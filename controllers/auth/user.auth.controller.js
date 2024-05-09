@@ -94,7 +94,7 @@ const userLogin = async (req, res, next) => {
             });
         }
 
-        const token = generateToken({ id: user._ids });
+        const token = generateToken({ id: user._id });
 
         return res.status(StatusCodes.OK).json({
             success: true,

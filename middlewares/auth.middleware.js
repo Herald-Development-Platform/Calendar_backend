@@ -15,6 +15,7 @@ const verifyToken = async (req, res, next) => {
     }
     let id;
     token = token.split(' ')[1];
+    token = token.trim();
     try {
         const { id: userID } = jwt.verify(token, ACCESS_SECRET);
         id = userID?.trim();
