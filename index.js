@@ -41,7 +41,10 @@ app.use(errorHandler);
 app.use((req, res) => {
   res
     .status(404)
-    .json({ message: `The route '${req.url}' doesn't exists on the API!` });
+    .json({
+      success: false,
+      message: `The route '${req.url}' doesn't exists on the API!`
+    });
 });
 
 connectToMongoDB().then(async () => {
