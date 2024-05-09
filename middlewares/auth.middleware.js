@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
-const { UserModel } = require('../models/user.model');
+const UserModel = require('../models/user.model');
 const { StatusCodes } = require('http-status-codes');
 const { ROLES } = require('../constants/role.constants');
 
-const ACCESS_SECRET = process.env.ACCESS_SECRET;
+const ACCESS_SECRET = process.env.JWT_SECRET;
 
 const verifyToken = async (req, res, next) => {
     let token = req.get('authorization');
@@ -19,6 +19,7 @@ const verifyToken = async (req, res, next) => {
         const { id: userID } = jwt.verify(token, ACCESS_SECRET);
         id = userID?.trim();
     } catch (e) {
+        console.log(e)
         return res.status(StatusCodes.FORBIDDEN).json({ error: "Invalid Token!" });
     }
     if (!id) {
