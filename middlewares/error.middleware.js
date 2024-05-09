@@ -9,7 +9,8 @@ const errorHandler = (err, req, res, next) => {
         }
         return res.status(StatusCodes.BAD_REQUEST).json({
             success: false,
-            validationErrors: errors
+            message: 'Validation Error!',
+            data: errors
         });
     }
 
@@ -18,7 +19,8 @@ const errorHandler = (err, req, res, next) => {
         if (err.code === 11000) {
             let errorObject = {
                 success: false,
-                validationErrors: {}
+                message: 'Validation Error!',
+                data: {}
             };
             errorObject.validationErrors[Object.keys(err.keyValue)[0]] = `The value '${Object.values(err.keyValue)[0]}' is duplicate.`;
             return res.status(StatusCodes.BAD_REQUEST).json(errorObject);
@@ -27,7 +29,7 @@ const errorHandler = (err, req, res, next) => {
     }
 
     if (err.name === 'SyntaxError' && err.message.includes('JSON')) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid JSON!", message: err.message });
+        return res.status(StatusCodes.BAD_REQUEST).json({success: false, error: "Invalid JSON!", message: err.message });
     }
 
     // Other errors
