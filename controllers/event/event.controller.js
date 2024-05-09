@@ -1,3 +1,4 @@
+const e = require("express");
 const { DEPARTMENTS } = require("../../constants/departments.constants");
 const { ROLES } = require("../../constants/role.constants");
 const eventModel = require("../../models/event.model");
@@ -69,7 +70,7 @@ const deleteEvent = async (req, res, next) => {
         }
 
         if (req.user.role === ROLES.SUPER_ADMIN || req.user._id === event.createdBy) {
-            const deleted = await eventModel.deleteOne({ _id: event._id });
+            const deleted = await eventModel.findByIdAndDelete(event._id);
             return res.status(StatusCodes.OK).json({
                 success: true,
                 message: "Event deleted successfully",
