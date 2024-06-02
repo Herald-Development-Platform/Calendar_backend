@@ -1,64 +1,40 @@
 const { StatusCodes } = require("http-status-codes");
-const userModel = require("../../models/user.model");
+const models = require("../../models/index.model");
 const bcrypt = require("bcrypt");
 const {
     generateToken,
 } = require("../../services/auth.services");
-const { ROLES } = require("../../constants/role.constants");
-const { DEPARTMENTS } = require("../../constants/departments.constants");
+const {
+    ROLES
+} = require("../../constants/role.constants");
 
-const adminRegister = async (req, res, next) => {
+const createAdmin = async () => {
+    const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
+    const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD;
+
     try {
-        const {
-            email,
-            password,
-            username,
-            photo,
-        } = req.body;
-
         const alreadyExistingAdmin = await userModel.findOne({ role: ROLES.SUPER_ADMIN });
         if (alreadyExistingAdmin) {
-            return res.status(StatusCodes.CONFLICT).json({
-                success: false,
-                message: "Admin already exists",
-            });
+            return;
         }
 
-        const alreadyExistingUser = await userModel.findOne({ email: email });
-        if (alreadyExistingUser) {
-            return res.status(StatusCodes.CONFLICT).json({
-                success: false,
-                message: "User with this email already exists",
-            });
-        }
+        const hashedPassword = await bcrypt.hash(SUPER_ADMIN_PASSWORD, 10);
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newadmin = await new userModel({
-            email,
+        await new models.userModel({
+            email: SUPER_ADMIN_EMAIL,
             password: hashedPassword,
-            username,
-            photo,
+            username: "superadmin",
             role: ROLES.SUPER_ADMIN,
-            department: DEPARTMENTS.ADMIN,
         }).save();
-
-        return res.status(StatusCodes.CREATED).json({
-            success: true,
-            message: "Admin created successfully",
-            data: newadmin,
-        });
-        
     } catch (error) {
-        next(error);
+        console.log(error);
     }
-
 }
 
 const adminLogin = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        const admin = await userModel.findOne({ email: email });
+        const admin = await models.userModel.findOne({ email: email });
         if (!admin) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 success: false,
@@ -73,8 +49,8 @@ const adminLogin = async (req, res, next) => {
             });
         }
 
-        const token = generateToken({ id: admin._id });
-
+        const token = generateToken(admin.toObject());
+        res.cookie('token', token, { domain: process.env.FRONTEND_URL });
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "admin logged in successfully",
@@ -87,6 +63,6 @@ const adminLogin = async (req, res, next) => {
 
 
 module.exports = {
-    adminRegister,
+    createAdmin,
     adminLogin,
 }

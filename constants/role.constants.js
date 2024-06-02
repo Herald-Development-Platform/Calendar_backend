@@ -1,7 +1,9 @@
 const ROLES = {
     SUPER_ADMIN: 'SUPER_ADMIN',
     DEPARTMENT_ADMIN: 'DEPARTMENT_ADMIN',
-    TEACHER: 'TEACHER',
+    STAFF: 'STAFF',
 };
 
-module.exports = { ROLES };
+module.exports = {
+    ROLES
+};

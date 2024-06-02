@@ -1,12 +1,14 @@
 const { StatusCodes } = require("http-status-codes");
-const userModel = require("../../models/user.model");
+const models = require("../../models/index.model");
 const bcrypt = require("bcrypt");
 const {
     generateToken,
 } = require("../../services/auth.services");
 const { ROLES } = require("../../constants/role.constants");
-const { DEPARTMENTS } = require("../../constants/departments.constants");
+
 const { COLLEGEID_REGEX, TEACHER_EMAIL_REGEX } = require("../../constants/regex.constants");
+
+
 
 const userRegister = async (req, res, next) => {
     try {
@@ -19,7 +21,7 @@ const userRegister = async (req, res, next) => {
             department,
         } = req.body;
 
-        const alreadyExisting = await userModel.findOne({ email: email });
+        const alreadyExisting = await models.userModel.findOne({ email: email });
         if (alreadyExisting) {
             return res.status(StatusCodes.CONFLICT).json({
                 success: false,
@@ -34,11 +36,29 @@ const userRegister = async (req, res, next) => {
             });
         }
 
-        if (!DEPARTMENTS[department]) {
+        if (role === ROLES.SUPER_ADMIN) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: "Invalid department. Valid departments are " + Object.values(DEPARTMENTS).join(", "),
+                message: "You are not authorized to create super admin",
             });
+        }
+
+        if (department) {
+            let department = await models.departmentModel.findById(department);
+            if (!department) {
+                department = await models.departmentModel.findOne({
+                    $or: [
+                        { name: department },
+                        { code: department }
+                    ]
+                });
+                if (!department) {
+                    return res.status(StatusCodes.BAD_REQUEST).json({
+                        success: false,
+                        message: "Invalid department id",
+                    });
+                }
+            }
         }
 
         if (COLLEGEID_REGEX.test(email)) {
@@ -94,8 +114,8 @@ const userLogin = async (req, res, next) => {
             });
         }
 
-        const token = generateToken({ id: user._id });
-
+        const token = generateToken(user);
+        res.cookie('token', token, { domain: process.env.FRONTEND_URL });
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "user logged in successfully",

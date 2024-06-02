@@ -62,10 +62,10 @@ const checkDepartmentAdmin = (req, res, next) => {
 };
 
 const checkTeacher = (req, res, next) => {
-    if (req.user?.role !== ROLES.TEACHER) {
+    if (req.user?.role !== ROLES.STAFF) {
         return res.status(StatusCodes.FORBIDDEN).json({
             success: false,
-            message: 'User needs to be teacher.',
+            message: 'User needs to be staff.',
         });
     }
     return next();
