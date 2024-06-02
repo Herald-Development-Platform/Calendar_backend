@@ -10,6 +10,11 @@ if (!NODE_MAILER_EMAIL || !NODE_MAILER_PASSWORD) {
 
 const sendEmail = async (to, cc, bcc, subject, html) => {
   try {
+    console.log(to);
+    console.log(cc);
+    console.log(bcc);
+    console.log(subject);
+    console.log(html);
     var transport = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -28,6 +33,7 @@ const sendEmail = async (to, cc, bcc, subject, html) => {
           html,
         },
         (error, response) => {
+          console.log(response)
           if (error) {
             console.log("Email could not sent due to error: " + error);
             resolve({ success: false, error: error });

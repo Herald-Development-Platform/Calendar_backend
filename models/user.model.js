@@ -33,6 +33,14 @@ const userSchema = new BaseMongooseSchema({
       required: true,
     }
   ],
+  OTP: {
+    type: String,
+    default: null
+  },
+  otpExpiryDate: {
+    type: Date,
+    default: null
+  }
 });
 
 const UserModel = mongoose.model('Users', userSchema);

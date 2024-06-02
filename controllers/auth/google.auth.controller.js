@@ -7,6 +7,8 @@ const {
 } = require("../../services/auth.services");
 
 const models = require('../../models/index.model');
+const { COLLEGEID_REGEX, TEACHER_EMAIL_REGEX } = require('../../constants/regex.constants');
+const { ROLES } = require('../../constants/role.constants');
 let authClient = new OAuth2Client(
     process.env.GOOGLE_ID,
     process.env.GOOGLE_SECRET,
@@ -47,9 +49,22 @@ const handleGoogleCallback = async (req, res, next) => {
         );
 
         const data = userInfo.data;
+        if (COLLEGEID_REGEX.test(data.email)) {
+            return res.redirect(`${process.env.FRONTEND_URL}/oauth?error=Students dont have access to this system. Please contact admin for more details.`);
+        }
+        if (!TEACHER_EMAIL_REGEX.test(data.email)) {
+            return res.redirect(`${process.env.FRONTEND_URL}/oauth?error=Invalid herald college email. Please enter a valid email.`);
+        }
+        
+        let role = ROLES.STAFF;
+        if (email === process.env.ADMIN_EMAIL) {
+            role = ROLES.SUPER_ADMIN;
+        }
+
         const user = await models.userModel.findOne({
             email: data.email,
         });
+
         let token;
         if (user) {
             await models.userModel.updateOne(
@@ -62,6 +77,7 @@ const handleGoogleCallback = async (req, res, next) => {
             const user = await new models.userModel({
                 email: data.email,
                 googleId: data.sub,
+                role,
                 photo: data.picture,
                 username: data.given_name + ' ' + data.family_name,
                 emailVerified: true,
@@ -70,7 +86,7 @@ const handleGoogleCallback = async (req, res, next) => {
 
             token = generateToken(user.toObject());
         }
-        let frontend_url = process.env.FRONTEND_URL
+        let frontend_url = process.env.FRONTEND_URL;
         if (frontend_url.trim().endsWith("/")) {
             frontend_url = frontend_url.slice(0, -1);
         }
@@ -78,7 +94,6 @@ const handleGoogleCallback = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-
 }
 
 

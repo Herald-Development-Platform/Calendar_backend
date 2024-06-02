@@ -50,7 +50,7 @@ const adminLogin = async (req, res, next) => {
         }
 
         const token = generateToken(admin.toObject());
-        res.cookie('token', token, { domain: process.env.FRONTEND_URL });
+        res.cookie('token',     token, { domain: process.env.FRONTEND_URL });
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "admin logged in successfully",
