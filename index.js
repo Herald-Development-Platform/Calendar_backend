@@ -39,7 +39,7 @@ app.use((req, res) => {
     .status(404)
     .json({
       success: false,
-      message: `The route '${req.url}' doesn't exists on the API!`
+      message: `The route '${req.method} ${req.url}' doesn't exists on the API!`
     });
 });
 

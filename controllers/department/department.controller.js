@@ -22,10 +22,39 @@ const createDepartment = async (req, res, next) => {
                 message: "Department with name or code already exists",
             });
         }
-
-        const newDepartment = await new models.departmentModel({
+        
+        const newDepartment = new models.departmentModel({
             ...req.body,
-        }).save();
+        });
+
+        if (req.body.admins && req.body.admins.length > 0) {
+            const admins = await models.userModel.find({ _id: { $in: req.body.admins } }).populate("department");
+            if (admins.length !== req.body.admins.length) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: "Some of the admins do not exist",
+                });
+            }
+
+            for (let user of admins) {
+                if (user.role === ROLES.DEPARTMENT_ADMIN) {
+                    return res.status(StatusCodes.CONFLICT).json({
+                        success: false,
+                        message: `User is already admin of ${user.department?.code} department`
+                    })
+                }
+            }
+            
+            await models.userModel.updateMany(
+                { _id: { $in: req.body.admins } },
+                { 
+                    role: ROLES.DEPARTMENT_ADMIN,
+                    department: newDepartment._id
+                 }
+            );
+        }
+
+        await newDepartment.save();
 
         return res.status(StatusCodes.CREATED).json({
             success: true,
@@ -39,9 +68,9 @@ const createDepartment = async (req, res, next) => {
 
 const getDepartmentByIdOrCode = async (codeOrId) => {
     try {
-        let department = await models.departmentModel.findById(codeOrId);
+        let department = await models.departmentModel.findOne({ code: codeOrId });
         if (!department) {
-            department = await models.departmentModel.findOne({ code: codeOrId });
+            department = await models.departmentModel.findById(codeOrId);
         }
         return {
             success: true,
@@ -90,6 +119,17 @@ const updateDepartment = async (req, res, next) => {
         if (req.body.admins) {
             delete req.body.admins;
         }
+        if (req.body.code) {
+            const alreadyExisting = await models.departmentModel.findOne({
+                code: req.body.code
+            });
+            if (alreadyExisting && alreadyExisting._id.toString() !== department._id.toString()){
+                return res.status(StatusCodes.CONFLICT).json({
+                    success: false,
+                    message: "Department with code already exists",
+                });
+            }
+        }
 
         const updatedDepartment = await models.departmentModel.findByIdAndUpdate(department._id, req.body, { new: true });
         return res.status(StatusCodes.OK).json({
@@ -102,6 +142,38 @@ const updateDepartment = async (req, res, next) => {
     }
 }
 
+const deleteDepartment = async (req, res, next) => {
+    try {
+        const { departmentId } = req.params;
+        const {data: department} = await getDepartmentByIdOrCode(departmentId);
+        if (!department) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "Department not found",
+            });
+        }
+        console.log(department)
+        await models.userModel.updateMany(
+            { department: department._id },
+            { department: null }
+        );
+        await models.userModel.updateMany(
+            { department: department._id, role: ROLES.DEPARTMENT_ADMIN }, 
+            { department: null, role: ROLES.STAFF }
+        );
+
+        const deletedDepartment = await models.departmentModel.findByIdAndDelete(department._id);
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Department deleted successfully",
+            data: deletedDepartment,
+        });
+    } catch (error) {
+        next(error);
+    }
+
+}
+
 const addAdminToDepartment = async (req, res, next) => {
     try {
         const { data: department } = await getDepartmentByIdOrCode(req.params.departmentId);
@@ -111,12 +183,46 @@ const addAdminToDepartment = async (req, res, next) => {
                 message: "Department not found",
             });
         }
-        if (!req.body.userId) {
+        if (!req.params.userId) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: "Please userId to add as admin",
+                message: "Please provide userId to add as admin",
             });
         }
+        const newAdmin = await models.userModel.findById(req.params.userId).populate("department");
+        if (!newAdmin) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        if (newAdmin.role === ROLES.DEPARTMENT_ADMIN) {
+            return res.status(StatusCodes.CONFLICT).json({
+                success: false,
+                message: `User is already admin of ${newAdmin.department?.code} department`
+            })
+        }
+
+        const updatedDepartment = await models.departmentModel.findByIdAndUpdate(department._id,
+            {
+                $push: { admins: req.params.userId }
+            },
+            { new: true }
+        );
+        const updatedUser = await models.userModel.findByIdAndUpdate(req.params.userId,
+            {
+                role: ROLES.DEPARTMENT_ADMIN,
+                department: updatedDepartment._id
+            },
+            { new: true }
+        )
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Admin added to department successfully",
+            data: { updatedDepartment, updatedUser },
+        });
+
     } catch (error) {
         next(error);
     }
@@ -131,7 +237,7 @@ const removeAdminFromDepartment = async (req, res, next) => {
                 message: "Department not found",
             });
         }
-        if (!req.body.userId) {
+        if (!req.params.userId) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "Please userId to remove from admin",
@@ -165,4 +271,5 @@ module.exports = {
     updateDepartment,
     addAdminToDepartment,
     removeAdminFromDepartment,
+    deleteDepartment,
 };

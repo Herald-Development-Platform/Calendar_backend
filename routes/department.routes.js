@@ -7,31 +7,43 @@ const {
 const {
     PERMISSIONS
 } = require("../constants/permissions.constants");
+const { getDepartments, createDepartment, updateDepartment, deleteDepartment, addAdminToDepartment, removeAdminFromDepartment } = require('../controllers/department/department.controller');
+const { verifyToken, checkSuperAdmin } = require('../middlewares/auth.middleware');
 
 departmentRouter.get(
-    "/"
+    "/department",
+    getDepartments
 );
 
 departmentRouter.post(
-    "/"
+    "/department",
+    verifyToken,
+    checkSuperAdmin,
+    createDepartment,
 );
 
 departmentRouter.put(
-    "/:departmentId"
+    "/department/:departmentId",
+    verifyToken,
+    updateDepartment,
 );
 
 departmentRouter.delete(
-    "/:departmentId"
+    "/department/:departmentId",
+    verifyToken,
+    deleteDepartment,
 );
 
 departmentRouter.patch(
-    "/:departmentId/add-admin/:adminId"
+    "/department/:departmentId/add-admin/:userId",
+    verifyToken,
+    addAdminToDepartment,
 );
 
 departmentRouter.patch(
-    "/:departmentId/remove-admin/:adminId"
+    "/department/:departmentId/remove-admin/:userId",
+    verifyToken,
+    removeAdminFromDepartment,
 );
-
-
 
 module.exports = departmentRouter;

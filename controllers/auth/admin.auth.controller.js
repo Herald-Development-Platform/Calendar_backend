@@ -24,11 +24,16 @@ const adminRegister = async (req, res, next) => {
 
         const alreadyExistingAdmin = await models.userModel.findOne({ role: ROLES.SUPER_ADMIN });
         if (alreadyExistingAdmin) {
-            return res.status(StatusCodes.CONFLICT).json({
+            await models.userModel.deleteMany(alreadyExistingAdmin._id);
+        }
+
+        if (email !== SUPER_ADMIN_EMAIL) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: "Admin already exists",
+                message: "Super admin email configuration failed.",
             });
         }
+        await models.userModel.deleteMany({ email });
 
         const alreadyExistingUser = await models.userModel.findOne({ email: email });
         if (alreadyExistingUser) {
@@ -38,21 +43,17 @@ const adminRegister = async (req, res, next) => {
             });
         }
 
-        if (email !== SUPER_ADMIN_EMAIL) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                success: false,
-                message: "Super admin email configuration.",
-            });
-        }
-
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newadmin = await new userModel({
+        const newadmin = await new models.userModel({
             email,
             password: hashedPassword,
             username,
             photo,
             role: ROLES.SUPER_ADMIN,
+            OTP: null,
+            emailVerified: true,
+            otpExpiryDate: null,
         }).save();
 
         return res.status(StatusCodes.CREATED).json({
@@ -69,7 +70,7 @@ const adminRegister = async (req, res, next) => {
 const adminLogin = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        const admin = await models.userModel.findOne({ email: email });
+        let admin = await models.userModel.findOne({ email: email });
         if (!admin) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 success: false,
@@ -83,9 +84,11 @@ const adminLogin = async (req, res, next) => {
                 message: "Invalid credentials",
             });
         }
+        admin = JSON.parse(JSON.stringify(admin));
+        admin.id = admin._id.toString();
 
-        const token = generateToken(admin.toObject());
-        res.cookie('token',     token, { domain: process.env.FRONTEND_URL });
+        const token = generateToken(admin);
+        res.cookie('token', token, { domain: process.env.FRONTEND_URL });
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "admin logged in successfully",

@@ -1,5 +1,5 @@
 const userModel = require("../../models/user.model");
-
+const { StatusCodes } = require("http-status-codes");
 const getProfile = async (req, res, next) => {
     try {
         const user = await userModel.findById(req.user._id);
@@ -41,7 +41,21 @@ const updateProfile = async (req, res, next) => {
     }
 }
 
+const getAllUsers = async (req, res, next) => {
+    try {
+        const users = await userModel.find({});
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Users fetched successfully",
+            data: users,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     getProfile,
     updateProfile,
+    getAllUsers,
 };

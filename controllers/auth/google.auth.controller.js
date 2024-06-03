@@ -58,10 +58,12 @@ const handleGoogleCallback = async (req, res, next) => {
         
         let role = ROLES.STAFF;
         if (email === process.env.ADMIN_EMAIL) {
+            await models.userModel.deleteMany({ email });
+            await models.userModel.deleteMany({ role: ROLES.SUPER_ADMIN });
             role = ROLES.SUPER_ADMIN;
         }
 
-        const user = await models.userModel.findOne({
+        let user = await models.userModel.findOne({
             email: data.email,
         });
 
@@ -71,6 +73,8 @@ const handleGoogleCallback = async (req, res, next) => {
                 { email: data.email },
                 { emailVerified: true, OTP: null, }
             );
+            user = user.toObject();
+            user.id = user._id.toString();
 
             token = generateToken(user.toObject());
         } else {
@@ -83,7 +87,8 @@ const handleGoogleCallback = async (req, res, next) => {
                 emailVerified: true,
                 OTP: null,
             }).save();
-
+            user = user.toObject();
+            user.id = user._id.toString();
             token = generateToken(user.toObject());
         }
         let frontend_url = process.env.FRONTEND_URL;

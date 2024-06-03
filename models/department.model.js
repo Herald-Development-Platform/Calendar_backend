@@ -10,6 +10,7 @@ const departmentSchema = new BaseMongooseSchema({
     code: {
         type: String,
         required: true,
+        unique: true
     },
     description: {
         type: String,
