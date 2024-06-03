@@ -268,6 +268,7 @@ module.exports = {
     createDepartment,
     getDepartments,
     getDepartmentById,
+    getDepartmentByIdOrCode,
     updateDepartment,
     addAdminToDepartment,
     removeAdminFromDepartment,

@@ -25,7 +25,10 @@ const userSchema = new BaseMongooseSchema({
     default: ROLES.STAFF,
     required: true,
   },
-  department: mongoose.Schema.Types.ObjectId,
+  department: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Departments'
+  },
   permissions: [
     {
       type: String,

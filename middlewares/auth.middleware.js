@@ -30,7 +30,7 @@ const verifyToken = async (req, res, next) => {
             message: 'Invalid Token!',
         });
     }
-    let user = await UserModel.findById(id);
+    let user = await UserModel.findById(id).populate('department');
     
     if (!user) {
         return res.status(StatusCodes.NOT_FOUND).json({

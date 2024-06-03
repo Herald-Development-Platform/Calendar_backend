@@ -1,23 +1,38 @@
 const { ROLES } = require("../../constants/role.constants");
 const models = require("../../models/index.model");
 const { StatusCodes } = require("http-status-codes");
-const { getDepartmentById } = require("../department/department.controller");
+const { getDepartmentByIdOrCode } = require("../department/department.controller");
 
 const createEvent = async (req, res, next) => {
     try {
-        const department = await getDepartmentById(req.body.department);
-        if (!req.body.department) {
+        if (!req.body.departments) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: "Department not found!",
+                message: "Departments is required",
             });
         }
-        if (req.user.department.toString() !== department._id.toString() && req.user.role !== ROLES.SUPER_ADMIN) {
+
+        let departments = [];
+        for (let departmentID of req.body.departments) {
+            let {data: department} = await getDepartmentByIdOrCode(departmentID);
+            if (!department) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: `Department ${departmentID} not found!`,
+                });
+            }
+            departments.push(department._id.toString());
+        }
+
+        req.body.departments = departments;
+
+        if (req.user?.department?.toString() !== departments[0] && req.user.role !== ROLES.SUPER_ADMIN) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 success: false,
                 message: "You are not authorized to create event for this department",
             });
         }
+
         const newEvent = await new models.eventModel({
             ...req.body,
             createdBy: req.user._id,
@@ -44,7 +59,7 @@ const getEvents = async (req, res, next) => {
             if (departments && departments.length > 0) {
                 query = { departments: { $in: departments } };
             }
-            events = await models.eventModel.find(query).sort({ start: 1 });
+            events = await models.eventModel.find(query).populate("departments").sort({ start: 1 });
         } else {
             events = await models.eventModel.find({
                 $or: [
@@ -69,7 +84,7 @@ const getEvents = async (req, res, next) => {
                         notes: { $regex: q, $options: "i" }
                     },
                 ]
-            }).sort({ date: 1 });
+            }).populate("departments").sort({ date: 1 });
         }
 
         return res.status(StatusCodes.OK).json({
@@ -136,7 +151,7 @@ const updateEvent = async (req, res, next) => {
             return res.status(StatusCodes.OK).json({
                 success: true,
                 message: "Event updated successfully",
-                data:updated,
+                data: updated,
             });
         } else {
             return res.status(StatusCodes.UNAUTHORIZED).json({
