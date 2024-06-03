@@ -16,6 +16,7 @@ const { auth } = require("google-auth-library");
 
 // Admin auth
 authRouter.post("/admin/login", adminLogin);
+authRouter.post("/admin/register", adminRegister);
 
 // User auth
 authRouter.post("/register", userRegister);
