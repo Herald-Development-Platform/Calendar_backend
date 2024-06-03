@@ -3,9 +3,6 @@ const userModel = require("../../models/user.model");
 const getProfile = async (req, res, next) => {
     try {
         const user = await userModel.findById(req.user._id);
-        delete user.password;
-        delete user.createdAt;
-        delete user.updatedAt;
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "Profile fetched successfully",

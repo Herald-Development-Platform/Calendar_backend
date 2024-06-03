@@ -1,5 +1,5 @@
 
-const getRegistrationHTML = (username, OTP) => {
+const getRegistrationHTML = (username, OTP, email) => {
     return `
     <!doctypehtml>
 <html lang=en>
@@ -30,7 +30,7 @@ const getRegistrationHTML = (username, OTP) => {
       <div class=otp>
          <p>Your One-Time Password (OTP) for email verification:</p>
          <strong>${OTP}</strong><br><br><span>Or,</span>
-         <p>You can <a href="${process.env.BACKEND_BASE_URL}/api/googleAuth/callback">click here</a> to verify the OTP.
+         <p>You can <a href="${process.env.BACKEND_BASE_URL}/api/verifyOTP?email=${email}&OTP=${OTP}">click here</a> to verify the OTP.
       </div>
       <div class=info>
          <p>Please note that this OTP will expire after 5 minutes. If it expires, you will need to sign up again.

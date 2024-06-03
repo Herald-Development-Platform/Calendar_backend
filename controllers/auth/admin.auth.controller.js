@@ -7,29 +7,67 @@ const {
 const {
     ROLES
 } = require("../../constants/role.constants");
+const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
+if (!SUPER_ADMIN_EMAIL) {
+    throw new Error("SUPER_ADMIN_EMAIL is not defined in .env file");
+}
 
-const createAdmin = async () => {
-    const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
-    const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD;
-
+const adminRegister = async (req, res, next) => {
     try {
+        const {
+            email,
+            password,
+            username,
+            photo,
+        } = req.body;
+
         const alreadyExistingAdmin = await userModel.findOne({ role: ROLES.SUPER_ADMIN });
         if (alreadyExistingAdmin) {
-            return;
+            return res.status(StatusCodes.CONFLICT).json({
+                success: false,
+                message: "Admin already exists",
+            });
         }
 
-        const hashedPassword = await bcrypt.hash(SUPER_ADMIN_PASSWORD, 10);
+        const alreadyExistingUser = await userModel.findOne({ email: email });
+        if (alreadyExistingUser) {
+            return res.status(StatusCodes.CONFLICT).json({
+                success: false,
+                message: "User with this email already exists",
+            });
+        }
 
-        await new models.userModel({
-            email: SUPER_ADMIN_EMAIL,
+        if (email !== SUPER_ADMIN_EMAIL) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "Only super admin can create admin",
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newadmin = await new userModel({
+            email,
             password: hashedPassword,
-            username: "superadmin",
+            username,
+            photo,
             role: ROLES.SUPER_ADMIN,
+            department: DEPARTMENTS.ADMIN,
         }).save();
+
+        return res.status(StatusCodes.CREATED).json({
+            success: true,
+            message: "Admin created successfully",
+            data: newadmin,
+        });
+        
     } catch (error) {
-        console.log(error);
+        next(error);
     }
+
 }
+
+
 
 const adminLogin = async (req, res, next) => {
     try {
