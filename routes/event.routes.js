@@ -13,13 +13,21 @@ const {
     deleteEvent,
 } = require("../controllers/event/event.controller");
 
+const {
+    convertEventsToIcs
+} = require("../controllers/ics/ics.controller");
+
 const { verifyToken } = require("../middlewares/auth.middleware");
 
 
+eventRouter.get(
+    "/event/exportIcs",
+    verifyToken,
+    convertEventsToIcs
+);
 eventRouter.post(
     "/event",
     verifyToken,
-    checkPermissions([PERMISSIONS.CREATE_EVENT]),
     createEvent
 );
 eventRouter.get(
@@ -30,7 +38,11 @@ eventRouter.get(
 eventRouter.delete(
     "/event/:id",
     verifyToken,
-    checkPermissions([PERMISSIONS.DELETE_EVENT]),
+    deleteEvent
+);
+eventRouter.delete(
+    "/event/:id",
+    verifyToken,
     deleteEvent
 );
 

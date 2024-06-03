@@ -14,7 +14,7 @@ const createEvent = async (req, res, next) => {
 
         let departments = [];
         for (let departmentID of req.body.departments) {
-            let {data: department} = await getDepartmentByIdOrCode(departmentID);
+            let { data: department } = await getDepartmentByIdOrCode(departmentID);
             if (!department) {
                 return res.status(StatusCodes.BAD_REQUEST).json({
                     success: false,

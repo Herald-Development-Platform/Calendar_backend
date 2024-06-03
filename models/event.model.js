@@ -21,10 +21,6 @@ const eventSchema = new BaseMongooseSchema({
             required: true,
         }
     ],
-    approved: {
-        type: Boolean,
-        default: false,
-    },
     color: String,
     notes: String,
     createdBy: {
