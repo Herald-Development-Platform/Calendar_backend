@@ -7,6 +7,7 @@ const {
 const {
     ROLES
 } = require("../../constants/role.constants");
+
 const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
 if (!SUPER_ADMIN_EMAIL) {
     throw new Error("SUPER_ADMIN_EMAIL is not defined in .env file");
@@ -21,7 +22,7 @@ const adminRegister = async (req, res, next) => {
             photo,
         } = req.body;
 
-        const alreadyExistingAdmin = await userModel.findOne({ role: ROLES.SUPER_ADMIN });
+        const alreadyExistingAdmin = await models.userModel.findOne({ role: ROLES.SUPER_ADMIN });
         if (alreadyExistingAdmin) {
             return res.status(StatusCodes.CONFLICT).json({
                 success: false,
@@ -29,7 +30,7 @@ const adminRegister = async (req, res, next) => {
             });
         }
 
-        const alreadyExistingUser = await userModel.findOne({ email: email });
+        const alreadyExistingUser = await models.userModel.findOne({ email: email });
         if (alreadyExistingUser) {
             return res.status(StatusCodes.CONFLICT).json({
                 success: false,
@@ -40,7 +41,7 @@ const adminRegister = async (req, res, next) => {
         if (email !== SUPER_ADMIN_EMAIL) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: "Only super admin can create admin",
+                message: "Super admin email configuration.",
             });
         }
 
@@ -52,7 +53,6 @@ const adminRegister = async (req, res, next) => {
             username,
             photo,
             role: ROLES.SUPER_ADMIN,
-            department: DEPARTMENTS.ADMIN,
         }).save();
 
         return res.status(StatusCodes.CREATED).json({
@@ -60,13 +60,10 @@ const adminRegister = async (req, res, next) => {
             message: "Admin created successfully",
             data: newadmin,
         });
-        
     } catch (error) {
         next(error);
     }
-
 }
-
 
 
 const adminLogin = async (req, res, next) => {
@@ -101,6 +98,6 @@ const adminLogin = async (req, res, next) => {
 
 
 module.exports = {
-    createAdmin,
+    adminRegister,
     adminLogin,
 }
