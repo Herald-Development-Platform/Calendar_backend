@@ -55,9 +55,26 @@ const getEvents = async (req, res, next) => {
         let events = [];
         if (req.user.role === ROLES.SUPER_ADMIN) {
             let query = {};
-            const departments = req.body.departments;
+            let departments = req.query.departments;
             if (departments && departments.length > 0) {
+                departments = departments.split(",");
                 query = { departments: { $in: departments } };
+            }
+            if (q) {
+                query["$or"] = [
+                    {
+                        title: { $regex: q, $options: "i" }
+                    },
+                    {
+                        description: { $regex: q, $options: "i" }
+                    },
+                    {
+                        location: { $regex: q, $options: "i" }
+                    },
+                    {
+                        notes: { $regex: q, $options: "i" }
+                    },
+                ];
             }
             events = await models.eventModel.find(query).populate("departments").sort({ start: 1 });
         } else {

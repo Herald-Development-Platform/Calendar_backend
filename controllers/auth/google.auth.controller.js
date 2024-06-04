@@ -55,7 +55,7 @@ const handleGoogleCallback = async (req, res, next) => {
         // if (!TEACHER_EMAIL_REGEX.test(data.email)) {
         //     return res.redirect(`${process.env.FRONTEND_URL}/oauth?error=Invalid herald college email. Please enter a valid email.`);
         // }
-        const email = data.email;
+        let email = data.email;
         
         let role = ROLES.STAFF;
         if (email === process.env.ADMIN_EMAIL) {
@@ -77,9 +77,11 @@ const handleGoogleCallback = async (req, res, next) => {
             user = user.toObject();
             user.id = user._id.toString();
 
-            token = generateToken(user.toObject());
+            user = JSON.parse(JSON.stringify(user));
+
+            token = generateToken(user);
         } else {
-            const user = await new models.userModel({
+            let user = await new models.userModel({
                 email: data.email,
                 googleId: data.sub,
                 role,
@@ -88,9 +90,9 @@ const handleGoogleCallback = async (req, res, next) => {
                 emailVerified: true,
                 OTP: null,
             }).save();
-            user = user.toObject();
+            user = JSON.parse(JSON.stringify(user));
             user.id = user._id.toString();
-            token = generateToken(user.toObject());
+            token = generateToken(user);
         }
         let frontend_url = process.env.FRONTEND_URL;
         if (frontend_url.trim().endsWith("/")) {
