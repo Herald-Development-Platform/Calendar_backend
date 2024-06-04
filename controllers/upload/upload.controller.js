@@ -2,8 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const { StatusCodes } = require("http-status-codes");
 try {
-  if (!fs.existsSync(path.resolve(__dirname, "..", 'files'))) {
-    fs.mkdirSync(path.resolve(__dirname, "..", 'files'));
+  if (!fs.existsSync(path.resolve(__dirname, "../..", 'files'))) {
+    fs.mkdirSync(path.resolve(__dirname, "../..", 'files'));
   }
 } catch (error) {
   console.error("Error creating upload folder:", error);

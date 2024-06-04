@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const upload = require("../services/multer.services");
 
 const authRouter = require("./auth.routes");
 const departmentRouter = require("./department.routes");
@@ -12,8 +13,9 @@ router.use(departmentRouter);
 // router.use(departmentRouter);
 
 //Upload Routes
-// router.post("/file", upload.single("image"), uploadImage);
-// router.get("/files/:filename", getFile);
+const { uploadImage, getFile } = require("../controllers/upload/upload.controller");
+router.post("/file", upload.single("image"), uploadImage);
+router.get("/files/:filename", getFile);
 
 
 module.exports = router;
