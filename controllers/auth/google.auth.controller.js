@@ -55,6 +55,7 @@ const handleGoogleCallback = async (req, res, next) => {
         // if (!TEACHER_EMAIL_REGEX.test(data.email)) {
         //     return res.redirect(`${process.env.FRONTEND_URL}/oauth?error=Invalid herald college email. Please enter a valid email.`);
         // }
+        const email = data.email;
         
         let role = ROLES.STAFF;
         if (email === process.env.ADMIN_EMAIL) {
