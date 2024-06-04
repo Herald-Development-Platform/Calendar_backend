@@ -12,7 +12,7 @@ const { ROLES } = require('../../constants/role.constants');
 let authClient = new OAuth2Client(
     process.env.GOOGLE_ID,
     process.env.GOOGLE_SECRET,
-    `http://localhost:10000/api/googleAuth/callback`
+    `${process.env.BACKEND_BASE_URL}/api/googleAuth/callback`
 );
 
 const getAuthUrl = (req, res, next) => {
