@@ -3,7 +3,7 @@ const models = require("../../models/index.model");
 const { StatusCodes } = require("http-status-codes");
 const { getDepartmentByIdOrCode } = require("../department/department.controller");
 const { sendEmail } = require("../../services/email.services");
-const { getDepartmentRequestHtml } = require("../../emails/request.html");
+const { getDepartmentRequestHtml, getDepartmentAcceptHtml } = require("../../emails/request.html");
 const { ROLES } = require("../../constants/role.constants");
 const { REQUEST_STATES } = require("../../constants/departmentRequest.constants");
 
@@ -79,10 +79,10 @@ const getDepartmentRequests = async (req, res, next) => {
         const department = req.user.department;
 
         if (!req.user.department && req.user.role !== ROLES.SUPER_ADMIN) {
-            query.user = req.user.id;
+            query.user = req.user._id.toString();
         }
 
-        if (req.user.role !== ROLES.SUPER_ADMIN) {
+        if (department && req.user.role !== ROLES.SUPER_ADMIN) {
             query.department = department?._id;
         }
 
@@ -133,6 +133,10 @@ const updateRequestStatus = async (req, res, next) => {
                 success: false,
                 message: 'You are not authorized to approve/reject this request',
             });
+        }
+
+        if (status === REQUEST_STATES.APPROVED) {
+            await sendEmail([user.email], [], [], "Department Request Approved", getDepartmentAcceptHtml(user.username, department.code));
         }
 
         const updatedUser = await models.userModel.findByIdAndUpdate(user.id, { department: department.id }, { new: true });
