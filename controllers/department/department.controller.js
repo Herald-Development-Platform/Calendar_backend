@@ -68,9 +68,9 @@ const createDepartment = async (req, res, next) => {
 
 const getDepartmentByIdOrCode = async (codeOrId) => {
     try {
-        let department = await models.departmentModel.findOne({ code: codeOrId });
+        let department = await models.departmentModel.findOne({ code: codeOrId }).populate("admins");
         if (!department) {
-            department = await models.departmentModel.findById(codeOrId);
+            department = await models.departmentModel.findById(codeOrId).populate("admins");
         }
         return {
             success: true,
@@ -87,7 +87,7 @@ const getDepartmentByIdOrCode = async (codeOrId) => {
 
 const getDepartments = async (req, res, next) => {
     try {
-        const departments = await models.departmentModel.find({});
+        const departments = await models.departmentModel.find({}).populate("admins");
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "Departments fetched successfully",

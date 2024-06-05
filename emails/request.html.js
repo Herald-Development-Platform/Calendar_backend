@@ -2,13 +2,11 @@
 const getDepartmentRequestHtml = (request) => {
 
     const {
-        adminName,
         requestorName,
         requestorEmail,
         departmentName,
         requestorReason,
         approveLink,
-        rejectLink,
     } = request;
 
     return `
@@ -25,7 +23,6 @@ const getDepartmentRequestHtml = (request) => {
                 font-family: Arial, sans-serif;
                 background-color: #f3f2f0;
             }
-
             .container {
                 max-width: 800px;
                 margin: 0 auto;
@@ -34,33 +31,28 @@ const getDepartmentRequestHtml = (request) => {
                 border-radius: 10px;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             }
-
             .header {
                 text-align: center;
                 margin-bottom: 20px;
             }
-
             .header img {
                 max-width: 100%;
                 margin-bottom: 20px;
             }
-
             .content {
                 text-align: center;
                 margin-bottom: 30px;
             }
-
             .content h1 {
                 font-size: 24px;
                 margin-bottom: 10px;
             }
-
             .content p {
                 font-size: 16px;
                 margin-bottom: 20px;
                 color: #555;
+                text-align: left;
             }
-
             .details {
                 background-color: #f9f9f9;
                 border: 1px solid #ccc;
@@ -70,18 +62,15 @@ const getDepartmentRequestHtml = (request) => {
                 font-size: 16px;
                 margin-bottom: 30px;
             }
-
             .details p {
                 margin: 5px 0;
             }
-
             .footer {
                 text-align: center;
                 margin-top: 30px;
                 color: #777;
                 font-size: 14px;
             }
-
             .button {
                 display: inline-block;
                 padding: 10px 20px;
@@ -92,7 +81,6 @@ const getDepartmentRequestHtml = (request) => {
                 text-decoration: none;
                 margin: 0 5px;
             }
-
             .button.reject {
                 background-color: #dc3545;
             }
@@ -115,25 +103,27 @@ const getDepartmentRequestHtml = (request) => {
             </div>
             <div class="content">
                 <h1>Approval Request</h1>
-                <p>Dear ${adminName},</p>
                 <p>A new user has requested to join your department. Please review the details below and approve or reject the request.</p>
             </div>
             <div class="details">
                 <p><strong>Requestor Name:</strong> ${requestorName}</p>
                 <p><strong>Email:</strong> ${requestorEmail}</p>
                 <p><strong>Department:</strong> ${departmentName}</p>
-                <p><strong>Reason for Joining:</strong> ${requestorReason}</p>
+                <p><strong>Note:</strong> ${(requestorReason && requestorReason.trim().length > 0) ? requestorReason.trim() : " - " }</p>
             </div>
             <div class="content">
-                <a href="${approveLink}" class="button">Approve</a>
-                <a href="${rejectLink}" class="button reject">Reject</a>
+                <a href="${approveLink}" class="button">Review Requests</a>
             </div>
             <div class="footer">
-                <p>Void Nepal Pvt Ltd, Kathmandu, Nepal</p>
-                <p>Copyright © 2023</p>
+                <p>Herald College Kathmandu</p>
+                <p>Copyright © ${new Date().getFullYear()}</p>
             </div>
         </div>
     </body>
     </html>    
     `
+}
+
+module.exports = {
+    getDepartmentRequestHtml
 }

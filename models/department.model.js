@@ -18,7 +18,7 @@ const departmentSchema = new BaseMongooseSchema({
     admins: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "Users",
         },
     ]
 });
