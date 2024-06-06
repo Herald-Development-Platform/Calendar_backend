@@ -21,11 +21,13 @@ const userRegister = async (req, res, next) => {
         } = req.body;
 
         const alreadyExisting = await models.userModel.findOne({ email: email });
-        if (alreadyExisting) {
+        if (alreadyExisting && alreadyExisting.emailVerified) {
             return res.status(StatusCodes.CONFLICT).json({
                 success: false,
                 message: "User already exists",
             });
+        } else {
+            await models.userModel.findByIdAndDelete(alreadyExisting._id);
         }
 
         // if (COLLEGEID_REGEX.test(email)) {

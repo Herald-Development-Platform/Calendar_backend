@@ -14,7 +14,8 @@ const {
 } = require("../controllers/event/event.controller");
 
 const {
-    convertEventsToIcs
+    convertEventsToIcs,
+    convertIcsToEvents
 } = require("../controllers/ics/ics.controller");
 
 const { verifyToken } = require("../middlewares/auth.middleware");
@@ -24,6 +25,11 @@ eventRouter.get(
     "/event/exportIcs",
     verifyToken,
     convertEventsToIcs
+);
+eventRouter.post(
+    "/event/fromIcs",
+    verifyToken,
+    convertIcsToEvents
 );
 eventRouter.post(
     "/event",

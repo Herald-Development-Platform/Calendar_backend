@@ -1,9 +1,7 @@
-const { createEvent } = require('ics');
-
 const { createEvents } = require('ics');
-const EventModel = require('../../models/event.model');
-const DepartmentModel = require('../../models/department.model');
-const userModel = require('../../models/user.model');
+const ical = require('ical');
+const models = require("../../models/index.model");
+const { StatusCodes } = require('http-status-codes');
 
 const convertEventsToIcs = async (req, res, next) => {
     try {
@@ -11,12 +9,12 @@ const convertEventsToIcs = async (req, res, next) => {
         let events;
 
         if (departmentId) {
-            events = await EventModel.find({ departments: departmentId })
+            events = await models.eventModel.find({ departments: departmentId })
                 .populate('departments')
                 .populate('involvedUsers')
                 .populate('createdBy');
         } else {
-            events = await EventModel.find({})
+            events = await models.eventModel.find({})
                 .populate('departments')
                 .populate('involvedUsers')
                 .populate('createdBy');
@@ -32,14 +30,13 @@ const convertEventsToIcs = async (req, res, next) => {
             }));
 
             for (let department of event.departments) {
-                const departmentUsers = await userModel.find({ department: department._id });
+                const departmentUsers = await models.userModel.find({ department: department._id });
                 attendees = [...attendees, ...departmentUsers.map(user => ({
                     name: user.username, email: user.email
                 }))];
             }
             const start = new Date(event.start);
             const end = new Date(event.end);
-            console.log(start, end);
             return {
                 title: event.title,
                 description: event.description,
@@ -78,4 +75,57 @@ const convertEventsToIcs = async (req, res, next) => {
     }
 };
 
-module.exports = { convertEventsToIcs };
+
+const convertIcsToEvents = async (req, res, next) => {
+    try {
+        const { icsString, department } = req.body;
+
+        if (!icsString) {
+            return res.status(400).json({ error: 'ICS string is required' });
+        }
+
+        const parsedEvents = ical.parseICS(icsString);
+
+        const {data: departmentData} = await models.departmentModel.findById(department);
+        if (!departmentData) {
+            return res.status(400).json({ error: 'Invalid department ID' });
+        }
+
+        const eventsToSave = [];
+
+        for (const key in parsedEvents) {
+            const event = parsedEvents[key];
+            console.log(event);
+            continue;
+
+            if (event.type === 'VEVENT') {
+                const { summary, description, start, end, location, organizer, attendees } = event;
+
+                const eventObj = new models.eventModel({
+                    title: summary,
+                    description: description,
+                    start: new Date(start),
+                    end: new Date(end),
+                    location: location,
+                    createdBy: await models.userModel.findOne({ email: organizer?.val }),
+                    departments: [department],
+                    involvedUsers: await models.userModel.find({ email: { $in: (attendees || []).map(attendee => attendee.val) } }),
+                    color: event.color || '',
+                    notes: event.notes || ''
+                });
+
+                eventsToSave.push(eventObj);
+            }
+        }
+
+        // const savedEvents = await models.eventModel.insertMany(eventsToSave);
+        // res.status(201).json(savedEvents);
+        res.status(StatusCodes.OK).json({ message: 'Events saved successfully' });
+
+    } catch (error) {
+        console.error('Error parsing ICS string:', error);
+        return next(error);
+    }
+};
+
+module.exports = { convertEventsToIcs, convertIcsToEvents };

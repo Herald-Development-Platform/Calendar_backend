@@ -50,7 +50,7 @@ const createEvent = async (req, res, next) => {
 
 const getEvents = async (req, res, next) => {
     try {
-        let { q } = req.query;
+        let { q, color } = req.query;
         if (!q) q = "";
         let events = [];
         if (req.user.role === ROLES.SUPER_ADMIN) {
@@ -60,6 +60,8 @@ const getEvents = async (req, res, next) => {
                 departments = departments.split(",");
                 query = { departments: { $in: departments } };
             }
+            if (color) query.color = color;
+
             if (q) {
                 query["$or"] = [
                     {
@@ -78,30 +80,25 @@ const getEvents = async (req, res, next) => {
             }
             events = await models.eventModel.find(query).populate("departments").sort({ start: 1 });
         } else {
-            events = await models.eventModel.find({
-                $or: [
-                    {
-                        createdBy: req.user._id
-                    },
-                    {
-                        departments: req.user.department
-                    }
-                ],
-                $or: [
-                    {
-                        title: { $regex: q, $options: "i" }
-                    },
-                    {
-                        description: { $regex: q, $options: "i" }
-                    },
-                    {
-                        location: { $regex: q, $options: "i" }
-                    },
-                    {
-                        notes: { $regex: q, $options: "i" }
-                    },
+            let query = {
+                $and: [
+                    { departments: req.user.department },
                 ]
-            }).populate("departments").sort({ date: 1 });
+            };
+            if (color) {
+                query["$and"].push({ color: color });
+            }
+            if (q) {
+                query["$and"].push({
+                    $or: [
+                        { title: { $regex: q, $options: "i" } },
+                        { description: { $regex: q, $options: "i" } },
+                        { location: { $regex: q, $options: "i" } },
+                        { notes: { $regex: q, $options: "i" } },
+                    ]
+                });
+            }
+            events = await models.eventModel.find(query).populate("departments").sort({ date: 1 });
         }
 
         return res.status(StatusCodes.OK).json({
