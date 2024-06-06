@@ -157,8 +157,25 @@ const verifyOTP = async (req, res, next) => {
     }
 }
 
+const generateNewToken = async (req, res, next) => {
+    try {
+        user = req.user;
+        user.department = user.department._id.toString();
+        const token = generateToken(user);
+        res.cookie('token', token, { domain: process.env.FRONTEND_URL });
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "user logged in successfully",
+            data: token,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     userRegister,
     userLogin,
     verifyOTP,
+    generateNewToken,
 }
