@@ -64,18 +64,10 @@ const getEvents = async (req, res, next) => {
 
             if (q) {
                 query["$or"] = [
-                    {
-                        title: { $regex: q, $options: "i" }
-                    },
-                    {
-                        description: { $regex: q, $options: "i" }
-                    },
-                    {
-                        location: { $regex: q, $options: "i" }
-                    },
-                    {
-                        notes: { $regex: q, $options: "i" }
-                    },
+                    { title: { $regex: q, $options: "i" } },
+                    { description: { $regex: q, $options: "i" } },
+                    { location: { $regex: q, $options: "i" } },
+                    { notes: { $regex: q, $options: "i" } },
                 ];
             }
             events = await models.eventModel.find(query).populate("departments").sort({ start: 1 });
