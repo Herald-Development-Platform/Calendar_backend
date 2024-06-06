@@ -7,6 +7,8 @@ const eventSchema = new BaseMongooseSchema({
     start: { type: Date, required: true, },
     end: { type: Date, required: true, },
     location: { type: String, required: true, },
+    recurring: { type: Boolean, default: false },
+    recurringTime: { type: Date },
     departments: [
         {
             type: mongoose.Schema.Types.ObjectId,

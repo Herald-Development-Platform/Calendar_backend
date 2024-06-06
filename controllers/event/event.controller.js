@@ -5,14 +5,19 @@ const { getDepartmentByIdOrCode } = require("../department/department.controller
 
 const createEvent = async (req, res, next) => {
     try {
-        if (!req.body.departments) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                success: false,
-                message: "Departments is required",
-            });
+        if (req.user.role === ROLES.SUPER_ADMIN) {
+            if (!req.body.departments || !req.body.departments?.length) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: "'departments' is required",
+                });
+            }
         }
 
         let departments = [];
+        if (req.user.department) {
+            departments.push(req.user.department._id.toString());
+        }
         for (let departmentID of req.body.departments) {
             let { data: department } = await getDepartmentByIdOrCode(departmentID);
             if (!department) {
@@ -25,13 +30,13 @@ const createEvent = async (req, res, next) => {
         }
 
         req.body.departments = departments;
-
-        if (req.user?.department?.toString() !== departments[0] && req.user.role !== ROLES.SUPER_ADMIN) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
-                success: false,
-                message: "You are not authorized to create event for this department",
-            });
-        }
+        console.log(req.body.departments)
+        // if (req.user?.department._id?.toString() !== departments[0] && req.user.role !== ROLES.SUPER_ADMIN) {
+        //     return res.status(StatusCodes.UNAUTHORIZED).json({
+        //         success: false,
+        //         message: "You are not authorized to create event for this department",
+        //     });
+        // }
 
         const newEvent = await new models.eventModel({
             ...req.body,
