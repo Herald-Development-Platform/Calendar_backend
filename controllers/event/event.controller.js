@@ -140,6 +140,8 @@ const getEvents = async (req, res, next) => {
             if (event.recurringType !== RECURRING_TYPES.NONE && event.recurrenceEnd) {
                 const occurrences = generateOccurrences(event);
                 allEvents = allEvents.concat(occurrences);
+            } else {
+                allEvents.push(event);
             }
         });
 
