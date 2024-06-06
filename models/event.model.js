@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const BaseMongooseSchema = require('./base.schema');
+const { RECURRING_TYPES } = require('../constants/event.constants');
 
 const eventSchema = new BaseMongooseSchema({
     title: { type: String, required: true },
@@ -7,8 +8,8 @@ const eventSchema = new BaseMongooseSchema({
     start: { type: Date, required: true, },
     end: { type: Date, required: true, },
     location: { type: String, required: true, },
-    recurring: { type: Boolean, default: false },
-    recurringTime: { type: Date },
+    recurringType: { type: String, enum: Object.values(RECURRING_TYPES), default: RECURRING_TYPES.NONE },
+    recurrenceEnd: { type: Date, default: ()=>Date.now() + (86400000*365) },
     departments: [
         {
             type: mongoose.Schema.Types.ObjectId,

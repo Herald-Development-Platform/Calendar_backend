@@ -2,6 +2,7 @@ const { ROLES } = require("../../constants/role.constants");
 const models = require("../../models/index.model");
 const { StatusCodes } = require("http-status-codes");
 const { getDepartmentByIdOrCode } = require("../department/department.controller");
+const { RECURRING_TYPES } = require("../../constants/event.constants");
 
 const createEvent = async (req, res, next) => {
     try {
@@ -29,7 +30,7 @@ const createEvent = async (req, res, next) => {
             departments.push(department._id.toString());
         }
 
-        req.body.departments = departments;
+        req.body.departments = Array.from(new Set(departments));
         console.log(req.body.departments)
         // if (req.user?.department._id?.toString() !== departments[0] && req.user.role !== ROLES.SUPER_ADMIN) {
         //     return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -58,8 +59,9 @@ const getEvents = async (req, res, next) => {
         let { q, color } = req.query;
         if (!q) q = "";
         let events = [];
+        let query = {};
+
         if (req.user.role === ROLES.SUPER_ADMIN) {
-            let query = {};
             let departments = req.query.departments;
             if (departments && departments.length > 0) {
                 departments = departments.split(",");
@@ -77,14 +79,12 @@ const getEvents = async (req, res, next) => {
             }
             events = await models.eventModel.find(query).populate("departments").sort({ start: 1 });
         } else {
-            let query = {
+            query = {
                 $and: [
                     { departments: req.user.department },
                 ]
             };
-            if (color) {
-                query["$and"].push({ color: color });
-            }
+            if (color) query["$and"].push({ color: color });
             if (q) {
                 query["$and"].push({
                     $or: [
@@ -95,18 +95,65 @@ const getEvents = async (req, res, next) => {
                     ]
                 });
             }
-            events = await models.eventModel.find(query).populate("departments").sort({ date: 1 });
+            events = await models.eventModel.find(query).populate("departments").sort({ start: 1 });
         }
 
+        const generateOccurrences = (event) => {
+            let occurrences = [];
+            let currentDate = new Date(event.start);
+            const recurrenceEnd = new Date(event.recurrenceEnd);
+
+            const incrementDate = (date, type) => {
+                switch (type) {
+                    case RECURRING_TYPES.DAILY:
+                        date.setDate(date.getDate() + 1);
+                        break;
+                    case RECURRING_TYPES.WEEKLY:
+                        date.setDate(date.getDate() + 7);
+                        break;
+                    case RECURRING_TYPES.MONTHLY:
+                        date.setMonth(date.getMonth() + 1);
+                        break;
+                    case RECURRING_TYPES.YEARLY:
+                        date.setFullYear(date.getFullYear() + 1);
+                        break;
+                    default:
+                        break;
+                }
+            };
+            
+            while (currentDate <= recurrenceEnd) {
+                let occurrence = {
+                    ...event.toObject(),
+                    start: new Date(currentDate),
+                    end: new Date(new Date(currentDate).setMinutes(new Date(currentDate).getMinutes() + (event.end - event.start) / 60000)),
+                };
+                occurrences.push(occurrence);
+                incrementDate(currentDate, event.recurringType);
+            }
+
+            return occurrences;
+        };
+
+        let allEvents = [];
+        events.forEach(event => {
+            if (event.recurringType !== RECURRING_TYPES.NONE && event.recurrenceEnd) {
+                const occurrences = generateOccurrences(event);
+                allEvents = allEvents.concat(occurrences);
+            }
+        });
+
+        allEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "Events fetched successfully",
-            data: events,
+            data: allEvents,
         });
     } catch (error) {
         next(error);
     }
-}
+};
+
 
 const deleteEvent = async (req, res, next) => {
     try {
