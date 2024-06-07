@@ -58,7 +58,7 @@ const handleGoogleCallback = async (req, res, next) => {
         let email = data.email;
         
         let role = ROLES.STAFF;
-        if (email === process.env.ADMIN_EMAIL) {
+        if (email === process.env.SUPER_ADMIN_EMAIL) {
             await models.userModel.deleteMany({ email });
             await models.userModel.deleteMany({ role: ROLES.SUPER_ADMIN });
             role = ROLES.SUPER_ADMIN;
