@@ -45,7 +45,7 @@ const userRegister = async (req, res, next) => {
         // }
 
         let role = ROLES.STAFF;
-        if (email === process.env.ADMIN_EMAIL) {
+        if (email === process.env.SUPER_ADMIN_EMAIL) {
             role = ROLES.SUPER_ADMIN;
         }
 
