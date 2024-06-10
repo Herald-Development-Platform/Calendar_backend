@@ -156,7 +156,7 @@ const updateRequestStatus = async (req, res, next) => {
         message: "You are not authorized to approve/reject this request",
       });
     }
-
+    let updatedUser;
     if (status === REQUEST_STATES.APPROVED) {
       await sendEmail(
         [user.email],
@@ -165,13 +165,13 @@ const updateRequestStatus = async (req, res, next) => {
         "Department Request Approved",
         getDepartmentAcceptHtml(user.username, department.code)
       );
+      updatedUser = await models.userModel.findByIdAndUpdate(
+        user.id,
+        { department: department.id },
+        { new: true }
+      );
     }
 
-    const updatedUser = await models.userModel.findByIdAndUpdate(
-      user.id,
-      { department: department.id },
-      { new: true }
-    );
     const updatedDepartmentRequest =
       await models.departmentRequestModel.findByIdAndUpdate(
         departmentRequestId,
