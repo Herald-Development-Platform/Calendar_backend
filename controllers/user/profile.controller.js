@@ -43,7 +43,7 @@ const updateProfile = async (req, res, next) => {
 
 const getAllUsers = async (req, res, next) => {
     try {
-        const users = await userModel.find({});
+        const users = await userModel.find({}).populate("department");
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "Users fetched successfully",
