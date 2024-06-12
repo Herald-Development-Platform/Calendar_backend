@@ -1,5 +1,7 @@
 const userModel = require("../../models/user.model");
 const { StatusCodes } = require("http-status-codes");
+const { getDepartmentByIdOrCode, addAdminToDepartment } = require("../department/department.controller");
+const { ROLES } = require("../../constants/role.constants");
 const getProfile = async (req, res, next) => {
     try {
         const user = await userModel.findById(req.user._id);
@@ -24,7 +26,7 @@ const updateProfile = async (req, res, next) => {
         }
 
         const { username, photo } = req.body;
-        
+
         const updated = await userModel.findByIdAndUpdate(req.user._id, {
             username,
             photo,
@@ -54,8 +56,51 @@ const getAllUsers = async (req, res, next) => {
     }
 }
 
+const updateUser = async (req, res, next) => {
+    try {
+        const user = await userModel.findById(req.params.id);
+        if (!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const { department, role } = req.body;
+
+        const { data: departmentData } = await getDepartmentByIdOrCode(department);
+        if (!departmentData) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "Department not found",
+            });
+        }
+        if (role === "DEPARTMENT_ADMIN") {
+            req.params.departmentId = departmentData._id;
+            req.params.userId = user._id;
+            return addAdminToDepartment(req, res, next);
+        }
+        let updatedUser;
+        if (role === "STAFF") {
+            updatedUser = await userModel.findByIdAndUpdate(user._id, {
+                    department: departmentData._id,
+                    role,
+                }, { new: true }
+            );
+        }
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "User updated successfully",
+            data: updatedUser,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     getProfile,
     updateProfile,
     getAllUsers,
+    updateUser,
 };

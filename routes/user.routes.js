@@ -4,6 +4,7 @@ const {
     updateProfile,
     getProfile,
     getAllUsers,
+    updateUser,
 } = require("../controllers/user/profile.controller");
 
 const {
@@ -27,6 +28,8 @@ const { verifyOTP } = require("../controllers/auth/user.auth.controller");
 userRouter.get("/profile/all", verifyToken, checkSuperAdmin, getAllUsers);
 userRouter.patch("/profile", updateProfile);
 userRouter.get("/profile",verifyToken, getProfile);
+
+userRouter.put("/user/:id", verifyToken, checkSuperAdmin, updateUser);
 
 userRouter.get("/verifyOTP", verifyOTP);
 
