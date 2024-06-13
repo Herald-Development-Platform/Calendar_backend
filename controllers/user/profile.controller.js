@@ -4,7 +4,7 @@ const { getDepartmentByIdOrCode, addAdminToDepartment } = require("../department
 const { ROLES } = require("../../constants/role.constants");
 const getProfile = async (req, res, next) => {
     try {
-        const user = await userModel.findById(req.user._id);
+        const user = await userModel.findById(req.user._id).populate("department");
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "Profile fetched successfully",

@@ -21,7 +21,7 @@ const {
 const { verifyToken } = require("../middlewares/auth.middleware");
 
 
-eventRouter.get(
+eventRouter.post(
     "/event/exportIcs",
     verifyToken,
     convertEventsToIcs

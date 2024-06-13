@@ -7,23 +7,37 @@ const { ROLES } = require('../../constants/role.constants');
 
 const convertEventsToIcs = async (req, res, next) => {
     try {
-        const departmentId = req.query.departmentId;
+        const departments = req.body.departments;
         let events;
-
-        if (departmentId) {
-            events = await models.eventModel.find({ departments: departmentId })
-                .populate('departments')
-                .populate('involvedUsers')
-                .populate('createdBy');
+        if (req.user.role !== ROLES.SUPER_ADMIN) {
+            events = await models.eventModel.find({
+                departments: req.user.department._id
+            }).populate('createdBy').populate('involvedUsers').populate('departments');
         } else {
-            events = await models.eventModel.find({})
-                .populate('departments')
-                .populate('involvedUsers')
-                .populate('createdBy');
+            let filter = {};
+            let departmentsToFilter;
+            if (departments && departments.length > 0) {
+                departmentsToFilter = await Promise.all(departments.map(async department => {
+                    let { data: departmentObj } = await getDepartmentByIdOrCode(department);
+                    if (!departmentObj) return null;
+                    return departmentObj._id.toString();
+                }));
+                departmentsToFilter = departmentsToFilter.filter(department => department !== null);
+            } else {
+                departmentsToFilter = (await models.departmentModel.find({})).map(department => department._id.toString());
+            }
+            if (departmentsToFilter.length > 0) {
+                filter.departments = { $in: departmentsToFilter };
+            }
+
+            events = await models.eventModel.find(filter).populate('createdBy').populate('involvedUsers').populate('departments');
         }
 
         if (!events || events.length === 0) {
-            return res.status(404).json({ error: 'No events found' });
+            return res.status(404).json({
+                success: false,
+                message: 'No events found to export'
+            });
         }
 
         const eventDetailsArray = await Promise.all(events.map(async event => {
@@ -68,9 +82,7 @@ const convertEventsToIcs = async (req, res, next) => {
                 console.error(error)
                 return next(error);
             }
-            res.setHeader('Content-Disposition', 'attachment; filename=events.ics');
-            res.setHeader('Content-Type', 'text/calendar');
-            res.send(value);
+            return res.status(StatusCodes.OK).json({ success: true, message: "Successfully exported to ICS string!" ,data: value });
         });
     } catch (error) {
         return next(error);
@@ -80,36 +92,38 @@ const convertEventsToIcs = async (req, res, next) => {
 
 const convertIcsToEvents = async (req, res, next) => {
     try {
-        const { icsString, department } = req.body;
+        const { icsString, departments } = req.body;
 
         if (!icsString) {
             return res.status(400).json({ error: 'ICS string is required' });
         }
 
-        let departmentData;
+        let departmentIds = [];
+
         if (req.user.department) {
-            departmentData = req.user.department;
-        } else if (department && req.user.role === ROLES.SUPER_ADMIN) {
-            departmentData = await getDepartmentByIdOrCode(department);
-            if (!departmentData) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Department not found"
-                });
-            }
-        } else {
-            return res.status(403).json({
+            departmentIds.push(req.user.department._id.toString());
+        } else if (req.user.role === ROLES.STAFF) {
+            return res.status(StatusCodes.FORBIDDEN).json({
                 success: false,
-                message: "You are not authorized to create events"
+                message: 'Staff members must belong to a department to create events'
             });
         }
+
+        if (departments && departments.length > 0) {
+            let ids = await Promise.all(departments.map(async department => {
+                let { data: departmentObj } = await getDepartmentByIdOrCode(department);
+                return departmentObj._id.toString();
+            }));
+            departmentIds = [...departmentIds, ...ids];
+        }
+
+        departmentIds = Array.from(new Set(departmentIds));
 
         const parsedEvents = ical.parseICS(icsString);
         const eventsToSave = [];
 
         for (const key in parsedEvents) {
             const event = parsedEvents[key];
-
 
             if (event.type === 'VEVENT') {
                 let { summary: title, description, start, end, location, organizer, attendee } = event;
@@ -132,7 +146,7 @@ const convertIcsToEvents = async (req, res, next) => {
                     end: new Date(end),
                     location: location,
                     createdBy: req.user.id,
-                    departments: [departmentData._id],
+                    departments: departmentIds,
                     involvedUsers: existingUserIds,
                     color: event.color || '',
                     notes: event.notes || ''
