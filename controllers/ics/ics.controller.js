@@ -42,13 +42,13 @@ const convertEventsToIcs = async (req, res, next) => {
 
         const eventDetailsArray = await Promise.all(events.map(async event => {
             let attendees = event.involvedUsers.map(user => ({
-                name: user.username, email: user.email
+                name: user?.username, email: user?.email
             }));
 
             for (let department of event.departments) {
                 const departmentUsers = await models.userModel.find({ department: department._id });
                 attendees = [...attendees, ...departmentUsers.map(user => ({
-                    name: user.username, email: user.email
+                    name: user?.username, email: user?.email
                 }))];
             }
             const start = new Date(event.start);
