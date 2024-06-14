@@ -11,6 +11,7 @@ const {
     createEvent,
     getEvents,
     deleteEvent,
+    updateEvent,
 } = require("../controllers/event/event.controller");
 
 const {
@@ -41,10 +42,10 @@ eventRouter.get(
     verifyToken,
     getEvents
 );
-eventRouter.delete(
+eventRouter.put(
     "/event/:id",
     verifyToken,
-    deleteEvent
+    updateEvent
 );
 eventRouter.delete(
     "/event/:id",

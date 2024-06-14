@@ -32,7 +32,6 @@ const errorHandler = (err, req, res, next) => {
         return res.status(StatusCodes.BAD_REQUEST).json({success: false, error: "Invalid JSON!", message: err.message });
     }
 
-    // Other errors
     console.error(err);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Some Internal Server Error!", message: err.message });
 };
