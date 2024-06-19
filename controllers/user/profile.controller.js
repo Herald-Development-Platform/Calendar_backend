@@ -93,9 +93,9 @@ const updateUser = async (req, res, next) => {
         let updatedUser;
         if (role === "STAFF") {
             updatedUser = await userModel.findByIdAndUpdate(user._id, {
-                    department: departmentData._id,
-                    role,
-                }, { new: true }
+                department: departmentData._id,
+                role,
+            }, { new: true }
             );
         }
         return res.status(StatusCodes.OK).json({
@@ -108,9 +108,43 @@ const updateUser = async (req, res, next) => {
     }
 }
 
+const deleteUser = async (req, res, next) => {
+    try {
+        const user = await userModel.findById(req.params.id);
+        if (!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+        if (req.user.role === ROLES.STAFF) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                success: false,
+                message: "Unauthorized to delete this user",
+            });
+        }
+        if (req.user.role !== ROLES.SUPER_ADMIN && req.user.role === ROLES.DEPARTMENT_ADMIN && user.department.toString() !== req.user?.department?._id?.toString()) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                success: false,
+                message: "Unauthorized to delete this user",
+            });
+        }
+        const deleted = await userModel.findByIdAndDelete(user._id);
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "User deleted successfully",
+            data: deleted,
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     getProfile,
     updateProfile,
     getAllUsers,
     updateUser,
+    deleteUser,
 };

@@ -5,6 +5,7 @@ const {
     getProfile,
     getAllUsers,
     updateUser,
+    deleteUser,
 } = require("../controllers/user/profile.controller");
 
 const {
@@ -25,6 +26,7 @@ const { verifyOTP } = require("../controllers/auth/user.auth.controller");
 
 
 // Profile endpoints
+userRouter.delete("/profile/:id",verifyToken, deleteUser);
 userRouter.get("/profile/all", verifyToken, getAllUsers);
 userRouter.patch("/profile", updateProfile);
 userRouter.get("/profile",verifyToken, getProfile);
