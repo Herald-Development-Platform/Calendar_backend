@@ -25,7 +25,7 @@ const { verifyOTP } = require("../controllers/auth/user.auth.controller");
 
 
 // Profile endpoints
-userRouter.get("/profile/all", verifyToken, checkSuperAdmin, getAllUsers);
+userRouter.get("/profile/all", verifyToken, getAllUsers);
 userRouter.patch("/profile", updateProfile);
 userRouter.get("/profile",verifyToken, getProfile);
 

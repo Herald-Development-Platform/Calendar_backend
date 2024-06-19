@@ -87,7 +87,13 @@ const getDepartmentByIdOrCode = async (codeOrId) => {
 
 const getDepartments = async (req, res, next) => {
     try {
-        const departments = await models.departmentModel.find({}).populate("admins");
+        let departments = await models.departmentModel.find({}).populate("admins");
+        departments = await Promise.all(departments.map(async department => {
+            department = department.toObject();
+            let departmentUsers = await models.userModel.countDocuments({ department: department._id });
+            department.membersCount = departmentUsers;
+            return department;
+        }));
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "Departments fetched successfully",

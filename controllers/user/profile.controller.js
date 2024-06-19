@@ -45,7 +45,17 @@ const updateProfile = async (req, res, next) => {
 
 const getAllUsers = async (req, res, next) => {
     try {
-        const users = await userModel.find({}).populate("department");
+        let users;
+        if (req.user.role === ROLES.SUPER_ADMIN) {
+            users = await userModel.find({}).populate("department");
+        } else if (req.user.department) {
+            users = await userModel.find({ department: req.user.department }).populate("department");
+        } else {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                success: false,
+                message: "Unauthorized to access this resource",
+            });
+        }
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "Users fetched successfully",

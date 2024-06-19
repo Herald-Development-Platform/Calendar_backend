@@ -121,7 +121,7 @@ const getEvents = async (req, res, next) => {
                         break;
                 }
             };
-            
+
             while (currentDate <= recurrenceEnd) {
                 let occurrence = {
                     ...event.toObject(),
@@ -203,8 +203,16 @@ const updateEvent = async (req, res, next) => {
 
         if (
             req.user.role === ROLES.SUPER_ADMIN ||
-            event?.departments[0] === req.user.department.toString()
+            event?.departments[0] === req.user?.department?._id?.toString()
         ) {
+            const departmentCodes = req.body.departments;
+            let departmentsIds = await Promise.all(departmentCodes.map(async (code) => {
+                const { data: departmentData } = await getDepartmentByIdOrCode(code);
+                return departmentData?._id;
+            }));
+            req.body.departments = departmentsIds.filter(val=>val);
+
+
             const updated = await models.eventModel.findByIdAndUpdate(event._id, req.body, {
                 new: true,
             });
