@@ -56,7 +56,7 @@ const createEvent = async (req, res, next) => {
 
 const getEvents = async (req, res, next) => {
     try {
-        let { q, color } = req.query;
+        let { q, colors } = req.query;
         if (!q) q = "";
         let events = [];
         let query = {};
@@ -67,7 +67,11 @@ const getEvents = async (req, res, next) => {
                 departments = departments.split(",");
                 query = { departments: { $in: departments } };
             }
-            if (color) query.color = color;
+            if (colors) {
+                colors = colors.replace("#", "");
+                colors = colors.split(",");
+                query.color = { $in: colors.map(c=>new RegExp(c,'i')) };
+            }
 
             if (q) {
                 query["$or"] = [
@@ -210,7 +214,7 @@ const updateEvent = async (req, res, next) => {
                 const { data: departmentData } = await getDepartmentByIdOrCode(code);
                 return departmentData?._id;
             }));
-            req.body.departments = departmentsIds.filter(val=>val);
+            req.body.departments = departmentsIds.filter(val => val);
 
 
             const updated = await models.eventModel.findByIdAndUpdate(event._id, req.body, {

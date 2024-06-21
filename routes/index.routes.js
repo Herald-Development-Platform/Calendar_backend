@@ -5,12 +5,13 @@ const authRouter = require("./auth.routes");
 const departmentRouter = require("./department.routes");
 const eventRouter = require("./event.routes");
 const userRouter = require("./user.routes");
+const notificationRouter = require("./notification.routes");
 
 router.use(authRouter);
 router.use(eventRouter);
 router.use(userRouter);
 router.use(departmentRouter);
-// router.use(departmentRouter);
+router.use(notificationRouter);
 
 //Upload Routes
 const { uploadImage, getFile } = require("../controllers/upload/upload.controller");

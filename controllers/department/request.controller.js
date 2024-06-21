@@ -12,6 +12,8 @@ const { ROLES } = require("../../constants/role.constants");
 const {
   REQUEST_STATES,
 } = require("../../constants/departmentRequest.constants");
+const { createNotification } = require("../notification/notification.controller");
+const { NOTIFICATION_CONTEXT } = require("../../constants/notification.constants");
 
 const createDepartmentRequest = async (req, res, next) => {
   try {
@@ -50,6 +52,16 @@ const createDepartmentRequest = async (req, res, next) => {
       department: departmentData._id,
       role: "DEPARTMENT_ADMIN",
     });
+
+    await Promise.all(admins.map((user) => {
+      createNotification({
+        user: user._id,
+        message: `You have a new department request from ${req.user.username}`,
+        context: NOTIFICATION_CONTEXT.DEPARTMENT_REQUEST,
+        contextId: departmentData._id,
+      })
+    }));
+
     const adminEmails = admins.map((admin) => admin.email);
 
     const response = await sendEmail(
@@ -158,17 +170,31 @@ const updateRequestStatus = async (req, res, next) => {
     }
     let updatedUser;
     if (status === REQUEST_STATES.APPROVED) {
+      updatedUser = await models.userModel.findByIdAndUpdate(
+        user.id,
+        { department: department.id },
+        { new: true }
+      );
+      const departmentUsers = await models.userModel.find({
+        department: department._id,
+      });
+      await Promise.all(departmentUsers.map((user) => {
+        if (user._id.toString() === updatedUser._id.toString()) {
+          return;
+        }
+        createNotification({
+          user: user._id,
+          message: `${updatedUser.username} has joined the department ${department.code} - ${department.name}`,
+          context: NOTIFICATION_CONTEXT.DEPARTMENT_JOIN,
+          contextId: updatedUser._id,
+        })
+      }));
       await sendEmail(
         [user.email],
         [],
         [],
         "Department Request Approved",
         getDepartmentAcceptHtml(user.username, department.code)
-      );
-      updatedUser = await models.userModel.findByIdAndUpdate(
-        user.id,
-        { department: department.id },
-        { new: true }
       );
     }
 
