@@ -1,5 +1,6 @@
 const { ROLES } = require("../../constants/role.constants");
 const models = require("../../models/index.model");
+
 const { StatusCodes } = require("http-status-codes");
 const { getDepartmentByIdOrCode } = require("../department/department.controller");
 const { RECURRING_TYPES } = require("../../constants/event.constants");
@@ -56,7 +57,7 @@ const createEvent = async (req, res, next) => {
 
 const getEvents = async (req, res, next) => {
     try {
-        let { q, colors } = req.query;
+        let { q, colors, eventFrom, eventTo, recurrenceType } = req.query;
         if (!q) q = "";
         let events = [];
         let query = {};
@@ -68,7 +69,7 @@ const getEvents = async (req, res, next) => {
                 query = { departments: { $in: departments } };
             }
             if (colors) {
-                colors = colors.replace("#", "");
+                colors = colors.replaceAll("#", "");
                 colors = colors.split(",");
                 query.color = { $in: colors.map(c=>new RegExp(c,'i')) };
             }
@@ -81,6 +82,16 @@ const getEvents = async (req, res, next) => {
                     { notes: { $regex: q, $options: "i" } },
                 ];
             }
+
+            if (eventFrom) {
+                query.start = { $gte: new Date(eventFrom) };
+            }
+            if (eventTo) {
+                query.end = { $lte: new Date(eventTo) };
+            }
+            if (recurrenceType) {
+                query.recurringType = {$regex: new RegExp(recurrenceType, 'i')};
+            }
             events = await models.eventModel.find(query).populate("departments").sort({ start: 1 });
         } else {
             query = {
@@ -88,7 +99,11 @@ const getEvents = async (req, res, next) => {
                     { departments: req.user.department },
                 ]
             };
-            if (color) query["$and"].push({ color: color });
+            if (colors) {
+                colors = colors.replaceAll("#", "");
+                colors = colors.split(",");
+                query["$and"].push({ color: { $in: colors.map(c=>new RegExp(c,'i')) } });
+            }
             if (q) {
                 query["$and"].push({
                     $or: [
@@ -98,6 +113,15 @@ const getEvents = async (req, res, next) => {
                         { notes: { $regex: q, $options: "i" } },
                     ]
                 });
+            }
+            if (eventFrom) {
+                query["$and"].push({ start: { $gte: new Date(eventFrom) } });
+            }
+            if (eventTo) {
+                query["$and"].push({ end: { $lte: new Date(eventTo) } });
+            }
+            if (recurrenceType) {
+                query["$and"].push({ recurringType: {$regex: new RegExp(recurrenceType, 'i')} });
             }
             events = await models.eventModel.find(query).populate("departments").sort({ start: 1 });
         }

@@ -1,6 +1,5 @@
 const { StatusCodes } = require("http-status-codes");
-const models = require("../../models/index.model");
-
+const notificationModel = require("../../models/notification.model");
 async function getNotifications(req, res, next) {
   try {
     const {
@@ -24,10 +23,10 @@ async function getNotifications(req, res, next) {
       };
     }
 
-    const notifications = await models.notificationModel.find({
+    const notifications = await notificationModel.find({
       ...filter,
       user: req.user._id,
-    }).populate("contextId");
+    }).populate("contextId").sort({date: -1});
 
     return res.status(StatusCodes.OK).json({
       success: true,
@@ -47,19 +46,25 @@ const createNotification = async ({
   context,
   message,
 }) => {
-  const notification = await new models.notificationModel({
+  const notification = await new notificationModel({
     user,
     contextId,
     context,
     message,
   }).save();
+  // const notification = new notificationModel({
+  //   user,
+  //   contextId,
+  //   context,
+  //   message,
+  // });;
   return notification;
 }
 
 const markNotificationAsRead = async (req, res, next) => {
   try {
     const { notificationId } = req.params;
-    const notification = await models.notificationModel.findOneAndUpdate({
+    const notification = await notificationModel.findOneAndUpdate({
       _id: notificationId,
       user: req.user._id,
     }, {
@@ -79,7 +84,7 @@ const markNotificationAsRead = async (req, res, next) => {
 
 const markAllNotificationsAsRead = async (req, res, next) => {
   try {
-    await models.notificationModel.updateMany({
+    await notificationModel.updateMany({
       user: req.user._id,
     }, {
       isRead: true,

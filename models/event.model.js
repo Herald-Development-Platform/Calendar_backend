@@ -4,6 +4,8 @@ const { RECURRING_TYPES } = require('../constants/event.constants');
 const userModel = require("./user.model");
 const { sendEmail } = require('../services/email.services');
 const { getNewEventNotificationEmailContent } = require('../emails/notification.html');
+const { createNotification } = require('../controllers/notification/notification.controller');
+const { NOTIFICATION_CONTEXT } = require('../constants/notification.constants');
 
 const eventSchema = new BaseMongooseSchema({
     title: { type: String, required: true },
@@ -52,6 +54,12 @@ eventSchema.pre("save", async function (next) {
     departmentUsers = Array.from(new Set(departmentUsers));
     departmentUsers = departmentUsers.map(user => {
         const emailContent = getNewEventNotificationEmailContent(user.username, this);
+        const notification = createNotification({
+            user: user._id,
+            contextId: this._id,
+            context: NOTIFICATION_CONTEXT.NEW_EVENT,
+            message: `New Event Created: ${this.title}`,
+        });
         sendEmail(user.email, [], [], "New Event Created", emailContent);
     });
     console.log("Department Users in Hook: \n", departmentUsers);

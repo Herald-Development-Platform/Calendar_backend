@@ -54,7 +54,7 @@ const createDepartmentRequest = async (req, res, next) => {
     });
 
     await Promise.all(admins.map((user) => {
-      createNotification({
+      return createNotification({
         user: user._id,
         message: `You have a new department request from ${req.user.username}`,
         context: NOTIFICATION_CONTEXT.DEPARTMENT_REQUEST,
@@ -182,7 +182,7 @@ const updateRequestStatus = async (req, res, next) => {
         if (user._id.toString() === updatedUser._id.toString()) {
           return;
         }
-        createNotification({
+        return createNotification({
           user: user._id,
           message: `${updatedUser.username} has joined the department ${department.code} - ${department.name}`,
           context: NOTIFICATION_CONTEXT.DEPARTMENT_JOIN,

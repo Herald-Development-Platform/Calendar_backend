@@ -12,7 +12,7 @@ const notificationSchema = new BaseMongooseSchema({
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'Users'
     },
     isRead: {
         type: Boolean,
@@ -27,7 +27,6 @@ const notificationSchema = new BaseMongooseSchema({
         default: Date.now
     }
 });
-
 
 const NotificationModel = mongoose.model('Notification', notificationSchema);
 module.exports = NotificationModel;
