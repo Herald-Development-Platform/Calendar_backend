@@ -61,20 +61,33 @@ const createNotification = async ({
   return notification;
 }
 
-const markNotificationAsRead = async (req, res, next) => {
+const markAsRead = async (req, res, next) => {
   try {
-    const { notificationId } = req.params;
-    const notification = await notificationModel.findOneAndUpdate({
-      _id: notificationId,
-      user: req.user._id,
-    }, {
-      isRead: true,
-    }, {
-      new: true,
-    });
+    const { id: notificationId } = req.params;
+    let notification;
+    if (notificationId) {
+      notification = await notificationModel.findOneAndUpdate({
+        _id: notificationId,
+        user: req.user._id,
+      }, {
+        isRead: true,
+      }, {
+        new: true,
+      });
+    } else {
+      notification = await notificationModel.updateMany({
+        user: req.user._id,
+      }, {
+        isRead: true,
+      }, {
+        new: true,
+        multi: true,
+      })
+    }
+    
     return res.status(StatusCodes.OK).json({
       success: true,
-      message: "Notification marked as read",
+      message: "Marked as read",
       data: notification,
     });
   } catch (error) {
@@ -82,25 +95,11 @@ const markNotificationAsRead = async (req, res, next) => {
   }
 }
 
-const markAllNotificationsAsRead = async (req, res, next) => {
-  try {
-    await notificationModel.updateMany({
-      user: req.user._id,
-    }, {
-      isRead: true,
-    });
-    return res.status(StatusCodes.OK).json({
-      success: true,
-      message: "All notifications marked as read",
-    });
-  } catch (error) {
-    next(error);
-  }
-}
 
 module.exports = {
   getNotifications,
   createNotification,
+  markAsRead,
 }
 
 

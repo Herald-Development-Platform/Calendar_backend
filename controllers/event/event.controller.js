@@ -84,10 +84,10 @@ const getEvents = async (req, res, next) => {
             }
 
             if (eventFrom) {
-                query.start = { $gte: new Date(eventFrom) };
+                query.start = { $gte: new Date(Number(eventFrom)) };
             }
             if (eventTo) {
-                query.end = { $lte: new Date(eventTo) };
+                query.end = { $lte: new Date(Number(eventTo)) };
             }
             if (recurrenceType) {
                 query.recurringType = {$regex: new RegExp(recurrenceType, 'i')};
@@ -115,10 +115,10 @@ const getEvents = async (req, res, next) => {
                 });
             }
             if (eventFrom) {
-                query["$and"].push({ start: { $gte: new Date(eventFrom) } });
+                query["$and"].push({ start: { $gte: new Date(Number(eventFrom)) } });
             }
             if (eventTo) {
-                query["$and"].push({ end: { $lte: new Date(eventTo) } });
+                query["$and"].push({ end: { $lte: new Date(Number(eventTo)) } });
             }
             if (recurrenceType) {
                 query["$and"].push({ recurringType: {$regex: new RegExp(recurrenceType, 'i')} });
