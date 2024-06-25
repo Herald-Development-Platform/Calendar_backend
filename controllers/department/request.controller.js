@@ -48,10 +48,22 @@ const createDepartmentRequest = async (req, res, next) => {
       });
     }
 
-    const admins = await models.userModel.find({
+    let admins = await models.userModel.find({
       department: departmentData._id,
       role: "DEPARTMENT_ADMIN",
     });
+
+    try {
+      const superAdmin = await models.userModel.findOne({
+        role: ROLES.SUPER_ADMIN,
+      });
+  
+      if (superAdmin) {
+        admins.push(superAdmin);
+      }
+    } catch (error) {
+      
+    }
 
     await Promise.all(admins.map((user) => {
       return createNotification({
