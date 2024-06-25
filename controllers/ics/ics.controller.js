@@ -71,7 +71,7 @@ const convertEventsToIcs = async (req, res, next) => {
                     end.getMinutes(),
                 ],
                 location: event.location,
-                organizer: { name: event.createdBy.username, email: event.createdBy.email },
+                organizer: { name: event?.createdBy?.username, email: event?.createdBy?.email },
                 attendees,
             }
         }));
