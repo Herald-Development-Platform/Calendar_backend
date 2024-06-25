@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const BaseMongooseSchema = require('./base.schema');
+const { sendNotification } = require('../controllers/websocket/socket.controller');
 
 const notificationSchema = new BaseMongooseSchema({
     context: {
@@ -26,6 +27,10 @@ const notificationSchema = new BaseMongooseSchema({
         type: Date,
         default: Date.now
     }
+});
+
+notificationSchema.post("save", async function () {
+    sendNotification(this.toObject());
 });
 
 const NotificationModel = mongoose.model('Notification', notificationSchema);

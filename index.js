@@ -1,6 +1,7 @@
 const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
+const { createServer } = require("http");
 // Importing intialization functions
 const { connectToMongoDB } = require("./services/database.services");
 
@@ -18,6 +19,7 @@ const corsOptions = {
     "http://localhost:5174",
     "http://localhost:5413",
     "http://localhost:9787",
+    "http://localhost:8080",
     "https://calendar.codynn.com",
     "http://localhost:7575",
     "https://calendar-frontend-suen.onrender.com"
@@ -29,6 +31,7 @@ app.use(cors(corsOptions));
 // routes import
 const mainRouter = require("./routes/index.routes");
 const errorHandler = require("./middlewares/error.middleware");
+const { handleWSConnection } = require("./controllers/websocket/socket.controller");
 
 // Use routes
 app.use("/api", mainRouter);
@@ -51,10 +54,16 @@ connectToMongoDB().then(async () => {
 const startServer = async () => {
   try {
     const PORT = process.env.PORT || 10000;
-    app.listen(PORT, () => {
+    const server = createServer(app); // Actual Web server
+    const WSapp = require("socket.io")(server, { cors: corsOptions }); // Websocker Server
+    WSapp.on("connection", handleWSConnection);
+    server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
+
   } catch (error) {
     console.error("Error while starting the server: ", error);
   }
 };
+
+
