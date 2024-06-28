@@ -31,7 +31,7 @@ const verifyToken = async (req, res, next) => {
         });
     }
     let user = await UserModel.findById(id).populate('department');
-    
+
     if (!user) {
         return res.status(StatusCodes.NOT_FOUND).json({
             success: false,
@@ -73,4 +73,22 @@ const checkTeacher = (req, res, next) => {
     return next();
 };
 
-module.exports = { verifyToken, checkSuperAdmin, checkDepartmentAdmin, checkTeacher};
+const isGoogleAuthorized = async (req, res, next) => {
+    const userAgain = await UserModel.findById(req.user.id);
+    req.user.googleTokens = userAgain.googleTokens;
+    if (!req.user?.googleTokens) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+            success: false,
+            message: 'User needs to be authorized with google.',
+        });
+    }
+    return next();
+};
+
+module.exports = {
+    verifyToken,
+    checkSuperAdmin,
+    checkDepartmentAdmin,
+    checkTeacher,
+    isGoogleAuthorized,
+};

@@ -7,3 +7,4 @@ database/calendar_data/*
 *lock.yaml
 *lock.yml
 *.log
+test.json

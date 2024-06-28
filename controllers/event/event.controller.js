@@ -4,6 +4,7 @@ const models = require("../../models/index.model");
 const { StatusCodes } = require("http-status-codes");
 const { getDepartmentByIdOrCode } = require("../department/department.controller");
 const { RECURRING_TYPES } = require("../../constants/event.constants");
+const { PERMISSIONS } = require("../../constants/permissions.constants");
 
 const createEvent = async (req, res, next) => {
     try {
@@ -32,13 +33,6 @@ const createEvent = async (req, res, next) => {
         }
 
         req.body.departments = Array.from(new Set(departments));
-        console.log(req.body.departments)
-        // if (req.user?.department._id?.toString() !== departments[0] && req.user.role !== ROLES.SUPER_ADMIN) {
-        //     return res.status(StatusCodes.UNAUTHORIZED).json({
-        //         success: false,
-        //         message: "You are not authorized to create event for this department",
-        //     });
-        // }
 
         const newEvent = await new models.eventModel({
             ...req.body,
@@ -62,7 +56,7 @@ const getEvents = async (req, res, next) => {
         let events = [];
         let query = {};
 
-        if (req.user.role === ROLES.SUPER_ADMIN) {
+        if (req.user.role === ROLES.SUPER_ADMIN || req.user.permissions.includes(PERMISSIONS.VIEW_EVENTS_FOR_ALL_DEPARTMENT)) {
             let departments = req.query.departments;
             if (departments && departments.length > 0) {
                 departments = departments.split(",");

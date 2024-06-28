@@ -2,6 +2,7 @@ const { StatusCodes } = require("http-status-codes");
 const { ROLES } = require("../constants/role.constants");
 
 const checkPermissions = (permissionsToCheck) => (req, res, next) => {
+    if (typeof permissionsToCheck === "string") permissionsToCheck = [permissionsToCheck];
     try {
         const { user } = req;
         if (!user) {
@@ -11,7 +12,7 @@ const checkPermissions = (permissionsToCheck) => (req, res, next) => {
             });
         }
 
-        if (user?.role === ROLES.SUPER_ADMIN){
+        if (user?.role === ROLES.SUPER_ADMIN) {
             return next();
         }
 

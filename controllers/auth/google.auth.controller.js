@@ -1,5 +1,5 @@
 
-const { OAuth2Client } = require('google-auth-library');
+const { google } = require('googleapis');
 const { StatusCodes } = require('http-status-codes');
 const axios = require('axios');
 const {
@@ -9,7 +9,8 @@ const {
 const models = require('../../models/index.model');
 const { COLLEGEID_REGEX, TEACHER_EMAIL_REGEX } = require('../../constants/regex.constants');
 const { ROLES } = require('../../constants/role.constants');
-let authClient = new OAuth2Client(
+const { encrypt } = require('../../services/encryption.services');
+let authClient = new google.auth.OAuth2(
     process.env.GOOGLE_ID,
     process.env.GOOGLE_SECRET,
     `${process.env.BACKEND_BASE_URL}/api/googleAuth/callback`
@@ -21,6 +22,9 @@ const getAuthUrl = (req, res, next) => {
         scope: [
             'https://www.googleapis.com/auth/userinfo.profile',
             'https://www.googleapis.com/auth/userinfo.email',
+            // scope for google calendar
+            'https://www.googleapis.com/auth/calendar',
+            'https://www.googleapis.com/auth/calendar.events',
         ],
         prompt: 'consent',
     });
@@ -37,15 +41,18 @@ const handleGoogleCallback = async (req, res, next) => {
             });
         }
         const response = await authClient.getToken(code);
-        const google_token = response.tokens.access_token;
+        const googleTokens = response.tokens;
+        const encryptedTokens = encrypt(JSON.stringify(googleTokens));
 
-        if (!google_token) {
+        const googleAccessToken = googleTokens.access_token;
+
+        if (!googleAccessToken) {
             return res
                 .status(StatusCodes.BAD_REQUEST)
                 .json({ error: 'google access token not provided' });
         }
         const userInfo = await axios.get(
-            `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${google_token}`
+            `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${googleAccessToken}`
         );
 
         const data = userInfo.data;
@@ -68,10 +75,18 @@ const handleGoogleCallback = async (req, res, next) => {
             email: data.email,
         });
 
+        console.log("user", user);
+        console.log("data", data);
+        console.log("encryptedTokens", encryptedTokens);
+        
+
         let token;
         if (user) {
             await models.userModel.updateOne(
-                { email: data.email },
+                {
+                    email: data.email,
+                    googleTokens: encryptedTokens,
+                },
                 { emailVerified: true, OTP: null, }
             );
             user = user.toObject();
@@ -89,6 +104,7 @@ const handleGoogleCallback = async (req, res, next) => {
                 username: data.given_name + ' ' + data.family_name,
                 emailVerified: true,
                 OTP: null,
+                googleTokens: encryptedTokens,
             }).save();
             user = JSON.parse(JSON.stringify(user));
             user.id = user._id.toString();

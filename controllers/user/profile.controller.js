@@ -25,11 +25,12 @@ const updateProfile = async (req, res, next) => {
             });
         }
 
-        const { username, photo } = req.body;
+        const { username, photo, importantDates } = req.body;
 
         const updated = await userModel.findByIdAndUpdate(req.user._id, {
             username,
             photo,
+            importantDates,
         }, { new: true });
 
         return res.status(StatusCodes.OK).json({
@@ -141,10 +142,39 @@ const deleteUser = async (req, res, next) => {
     }
 }
 
+const updateUserPermissions = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+        const permissions = req.body.permissions;
+
+        const user = await userModel.findById(id);
+
+        if (!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const updatedUser = await userModel.findByIdAndUpdate(user._id, {
+            permissions: Array.from(new Set(permissions)),
+        }, { new: true });
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Permissions update successfully",
+            data: updatedUser,
+        });
+    } catch (error) {
+        
+    }
+}
+
 module.exports = {
     getProfile,
     updateProfile,
     getAllUsers,
     updateUser,
     deleteUser,
+    updateUserPermissions,
 };

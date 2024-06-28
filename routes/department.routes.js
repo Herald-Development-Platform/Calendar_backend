@@ -32,47 +32,59 @@ departmentRouter.post(
 departmentRouter.get(
     "/department/request",
     verifyToken,
+    checkPermissions(PERMISSIONS.MANAGE_DEPARTMENT_REQUEST),
+    getDepartmentRequests,
+)
+departmentRouter.get(
+    "/department/request/my",
+    verifyToken,
     getDepartmentRequests,
 )
 departmentRouter.put(
     "/department/request/:departmentRequestId",
     verifyToken,
+    checkPermissions(PERMISSIONS.MANAGE_DEPARTMENT_REQUEST),
     updateRequestStatus,
 )
 
 departmentRouter.get(
     "/department",
+    verifyToken,
     getDepartments
 );
 
 departmentRouter.post(
     "/department",
     verifyToken,
-    checkSuperAdmin,
+    checkPermissions(PERMISSIONS.CREATE_DEPARTMENT),
     createDepartment,
 );
 
 departmentRouter.put(
     "/department/:departmentId",
     verifyToken,
+    checkPermissions(PERMISSIONS.UPDATE_DEPARTMENT),
     updateDepartment,
 );
 
 departmentRouter.delete(
     "/department/:departmentId",
     verifyToken,
+    checkPermissions(PERMISSIONS.DELETE_DEPARTMENT),
     deleteDepartment,
 );
 
 departmentRouter.patch(
     "/department/:departmentId/add-admin/:userId",
     verifyToken,
+    checkPermissions([PERMISSIONS.UPDATE_USER, PERMISSIONS.UPDATE_DEPARTMENT]),
     addAdminToDepartment,
 );
 
 departmentRouter.patch(
     "/department/:departmentId/remove-admin/:userId",
     verifyToken,
+    checkPermissions([PERMISSIONS.UPDATE_USER, PERMISSIONS.UPDATE_DEPARTMENT]),
     removeAdminFromDepartment,
 );
 

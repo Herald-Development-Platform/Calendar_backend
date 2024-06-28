@@ -19,7 +19,8 @@ const {
     convertIcsToEvents
 } = require("../controllers/ics/ics.controller");
 
-const { verifyToken } = require("../middlewares/auth.middleware");
+const { verifyToken, isGoogleAuthorized } = require("../middlewares/auth.middleware");
+const { getGoogleEvents } = require("../controllers/event/googleCalendar.controller");
 
 
 eventRouter.post(
@@ -53,5 +54,11 @@ eventRouter.delete(
     deleteEvent
 );
 
+eventRouter.get(
+    "/google/events",
+    verifyToken,
+    isGoogleAuthorized,
+    getGoogleEvents
+);
 
 module.exports = eventRouter;

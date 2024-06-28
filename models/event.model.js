@@ -31,6 +31,7 @@ const eventSchema = new BaseMongooseSchema({
     ],
     color: String,
     notes: String,
+    googleId: String,
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Users',

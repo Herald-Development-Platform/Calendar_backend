@@ -43,7 +43,12 @@ const userSchema = new BaseMongooseSchema({
   otpExpiryDate: {
     type: Date,
     default: null
-  }
+  },
+  googleTokens: {
+    iv: String,
+    tokenHash: String
+  },
+  importantDates: [Date],
 });
 
 userSchema.pre("find", function (next) {
@@ -76,6 +81,7 @@ userSchema.options.toJSON = {
     delete ret.OTP;
     delete ret.otpExpiryDate;
     delete ret.password;
+    delete ret.googleTokens;
     return ret;
   }
 };
@@ -85,6 +91,7 @@ userSchema.options.toObject = {
     delete ret.OTP;
     delete ret.otpExpiryDate;
     delete ret.password;
+    delete ret.googleTokens;
     return ret;
   }
 };
