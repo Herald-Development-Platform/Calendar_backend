@@ -52,6 +52,8 @@ eventSchema.pre("save", async function (next) {
         }
         departmentUsers.push(user);
     }));
+    const superAdminUsers = await userModel.find({ role: "SUPER_ADMIN" });
+    departmentUsers = departmentUsers.concat(superAdminUsers);
     departmentUsers = Array.from(new Set(departmentUsers));
     departmentUsers = departmentUsers.map(user => {
         const emailContent = getNewEventNotificationEmailContent(user.username, this);
