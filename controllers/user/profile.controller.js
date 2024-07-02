@@ -77,7 +77,7 @@ const updateUser = async (req, res, next) => {
             });
         }
 
-        const { department, role } = req.body;
+        const { department, role, permissions } = req.body;
 
         if (req.user.role !== ROLES.SUPER_ADMIN && req.user.department._id.toString() !== user.department.toString() ) {
             return res.status(StatusCodes.FORBIDDEN).json({
@@ -100,16 +100,23 @@ const updateUser = async (req, res, next) => {
                 message: "Department not found",
             });
         }
-        if (role === ROLES.DEPARTMENT_ADMIN) {
+        if (role === ROLES.DEPARTMENT_ADMIN && user.role !== ROLES.DEPARTMENT_ADMIN) {
             req.params.departmentId = departmentData._id;
             req.params.userId = user._id;
             return addAdminToDepartment(req, res, next);
+        }
+        if (role === ROLES.DEPARTMENT_ADMIN && user.role === ROLES.DEPARTMENT_ADMIN) {
+            updatedUser = await userModel.findByIdAndUpdate(user._id, {
+                permissions
+            }, { new: true }
+            );
         }
         let updatedUser;
         if (role === ROLES.STAFF) {
             updatedUser = await userModel.findByIdAndUpdate(user._id, {
                 department: departmentData._id,
                 role,
+                permissions
             }, { new: true }
             );
         }
