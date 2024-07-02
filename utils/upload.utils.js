@@ -1,4 +1,4 @@
-const { TEACHER_EMAIL_REGEX } = require("../constants/regex.constants");
+const { TEACHER_EMAIL_REGEX, COLLEGEID_REGEX } = require("../constants/regex.constants");
 
 const extractTeacherData = (excelRow) => {
     let emails = [];
@@ -7,7 +7,9 @@ const extractTeacherData = (excelRow) => {
     Object.keys(excelRow).forEach((key) => {
         let value = excelRow[key].toString().trim();
 
-        if (TEACHER_EMAIL_REGEX.test(value)) {
+        if (COLLEGEID_REGEX.test(value)) {
+            emails.push(value);
+        } else if (TEACHER_EMAIL_REGEX.test(value)) {
             emails.push(value);
         }
         // Checking if the value is not SN and contains a whitespace because

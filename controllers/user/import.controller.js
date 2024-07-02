@@ -2,12 +2,14 @@ const { StatusCodes } = require("http-status-codes");
 const xlsx = require("xlsx");
 const fs = require("fs");
 const models = require("../../models/index.model");
+const bcrypt = require("bcrypt");
 
 const {
     extractTeacherData,
 } = require("../../utils/upload.utils");
 
 const { ROLES } = require("../../constants/role.constants");
+const { sendEmail } = require("../../services/email.services");
 
 const uploadUsers = async (req, res, next) => {
     if (!Object.keys(req.files).length) {
@@ -41,15 +43,28 @@ const uploadUsers = async (req, res, next) => {
                 if (!(teacher.name === undefined) || teacher.email === undefined) {
                     console.log(teacher.name, teacher.email);
                     try {
+                        console.log(teacher);
                         const alreadyExistingUser = await models.userModel.findOne({
                             email: teacher.email,
                         });
+                        if (alreadyExistingUser) {
+                            failed_to_read_rows.push({
+                                name: teacher.name,
+                                email: teacher.email,
+                                reason: "User already exists with the email",
+                            });
+                            return;
+                        }
+                        const randomPassword = Math.random().toString(36).slice(-8);
+                        const hashedPassword = await bcrypt.hash(randomPassword, 10);
                         const newUser = await new models.userModel({
                             username: teacher.name,
                             email: teacher.email,
                             role: ROLES.STAFF,
+                            password: hashedPassword,
                             emailVerified: true,
                         }).save();
+                        const response = await sendEmail(teacher.email, [], [], "Welcome to Herald Intra Calendar", `Hello ${teacher.name},\n\nYou have been added to the Herald Intra Calendar. You can now login to your account using the following credentials:\n\nUsername: ${teacher.email}\nPassword: ${randomPassword}\n\nPlease change your password after logging in.\n\nRegards,\nHerald Intra Calendar Team`);
                     } catch (error) {
                         console.log(error.message)
                     }
