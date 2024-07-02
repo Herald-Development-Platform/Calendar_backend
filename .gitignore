@@ -8,3 +8,5 @@ database/calendar_data/*
 *lock.yml
 *.log
 test.json
+
+uploads/*
