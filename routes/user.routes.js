@@ -34,8 +34,8 @@ userRouter.get("/profile/all", verifyToken, getAllUsers);
 userRouter.patch("/profile", updateProfile);
 userRouter.get("/profile",verifyToken, getProfile);
 
-userRouter.post("/user/addUsers", teacherUpload ,uploadUsers);
-userRouter.put("/user/:id", verifyToken, checkSuperAdmin, checkPermissions(PERMISSIONS.UPDATE_USER) , updateUser);
+userRouter.post("/user/addUsers", verifyToken, checkPermissions(PERMISSIONS.CREATE_USER), teacherUpload, uploadUsers);
+userRouter.put("/user/:id", verifyToken, checkPermissions(PERMISSIONS.UPDATE_USER) , updateUser);
 userRouter.patch("/user/:id", verifyToken, checkSuperAdmin, updateUserPermissions);
 
 userRouter.get("/verifyOTP", verifyOTP);

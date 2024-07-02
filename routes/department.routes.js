@@ -77,14 +77,14 @@ departmentRouter.delete(
 departmentRouter.patch(
     "/department/:departmentId/add-admin/:userId",
     verifyToken,
-    checkPermissions([PERMISSIONS.UPDATE_USER, PERMISSIONS.UPDATE_DEPARTMENT]),
+    checkPermissions([PERMISSIONS.UPDATE_USER]),
     addAdminToDepartment,
 );
 
 departmentRouter.patch(
     "/department/:departmentId/remove-admin/:userId",
     verifyToken,
-    checkPermissions([PERMISSIONS.UPDATE_USER, PERMISSIONS.UPDATE_DEPARTMENT]),
+    checkPermissions([PERMISSIONS.UPDATE_USER]),
     removeAdminFromDepartment,
 );
 

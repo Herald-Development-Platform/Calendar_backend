@@ -1,13 +1,4 @@
-/*
-Dynamic Permission:
-User CRUD:
-Department CRUD - individual permissions
-Event CRUD:
-	Create for all department
-	View events of all department
 
-User import and export permission
-**/
 const PERMISSIONS = {
     // Bulk import users, delete and update users
     CREATE_USER: "CREATE_USER",
@@ -24,6 +15,15 @@ const PERMISSIONS = {
     VIEW_EVENTS_FOR_ALL_DEPARTMENT: "VIEW_EVENTS_FOR_ALL_DEPARTMENT",
 }
 
+const DEFAULT_PERMISSIONS = {
+    STAFF_PERMISSIONS: [],
+    DEPARTMENT_ADMIN_PERMISSIONS: [
+        PERMISSIONS.MANAGE_DEPARTMENT_REQUEST,
+    ],
+    SUPER_ADMIN_PERMISSIONS: Object.values(PERMISSIONS),
+}
+
 module.exports = {
-    PERMISSIONS
+    PERMISSIONS,
+    DEFAULT_PERMISSIONS,
 }

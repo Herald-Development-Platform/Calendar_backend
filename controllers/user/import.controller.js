@@ -6,6 +6,7 @@ const models = require("../../models/index.model");
 const {
     extractTeacherData,
 } = require("../../utils/upload.utils");
+
 const { ROLES } = require("../../constants/role.constants");
 
 const uploadUsers = async (req, res, next) => {
@@ -35,29 +36,34 @@ const uploadUsers = async (req, res, next) => {
             });
         });
 
-        uploaded_teachers.map(async (teacher) => {
-            if (!(teacher.name === undefined) || teacher.email === undefined) {
-                console.log(teacher.name, teacher.email);
-                try {
-                    const newUser = await new models.userModel({
-                        username: teacher.name,
-                        email: teacher.email,
-                        role: ROLES.STAFF,
-                        emailVerified: true,
-                    }).save();
-                } catch (error) {
-                    console.log(error.message)
+        await Promise.all(
+            uploaded_teachers.map(async (teacher) => {
+                if (!(teacher.name === undefined) || teacher.email === undefined) {
+                    console.log(teacher.name, teacher.email);
+                    try {
+                        const alreadyExistingUser = await models.userModel.findOne({
+                            email: teacher.email,
+                        });
+                        const newUser = await new models.userModel({
+                            username: teacher.name,
+                            email: teacher.email,
+                            role: ROLES.STAFF,
+                            emailVerified: true,
+                        }).save();
+                    } catch (error) {
+                        console.log(error.message)
+                    }
                 }
-            }
-        });
+            })
+        );
         fs.unlinkSync(file.path);
 
-        // if (failed_to_read_rows.length) {
-        //     return res.status(StatusCodes.OK).json({
-        //         message: "Teacher file uploaded partially",
-        //         failedRows: failed_to_read_rows,
-        //     });
-        // }
+        if (failed_to_read_rows.length) {
+            return res.status(StatusCodes.OK).json({
+                message: "Teacher file uploaded partially",
+                failedRows: failed_to_read_rows,
+            });
+        }
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "Teacher file upload was successful!",

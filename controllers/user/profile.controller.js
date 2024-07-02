@@ -79,6 +79,20 @@ const updateUser = async (req, res, next) => {
 
         const { department, role } = req.body;
 
+        if (req.user.role !== ROLES.SUPER_ADMIN && req.user.department._id.toString() !== user.department.toString() ) {
+            return res.status(StatusCodes.FORBIDDEN).json({
+                success: false,
+                message: "Unauthorized to update this user",
+            });
+        }
+
+        if (req.user.role !== ROLES.SUPER_ADMIN && department !== user.department.toString() ) {
+            return res.status(StatusCodes.FORBIDDEN).json({
+                success: false,
+                message: "Unauthorized to update this user's department",
+            });
+        }
+
         const { data: departmentData } = await getDepartmentByIdOrCode(department);
         if (!departmentData) {
             return res.status(StatusCodes.NOT_FOUND).json({
@@ -86,13 +100,13 @@ const updateUser = async (req, res, next) => {
                 message: "Department not found",
             });
         }
-        if (role === "DEPARTMENT_ADMIN") {
+        if (role === ROLES.DEPARTMENT_ADMIN) {
             req.params.departmentId = departmentData._id;
             req.params.userId = user._id;
             return addAdminToDepartment(req, res, next);
         }
         let updatedUser;
-        if (role === "STAFF") {
+        if (role === ROLES.STAFF) {
             updatedUser = await userModel.findByIdAndUpdate(user._id, {
                 department: departmentData._id,
                 role,

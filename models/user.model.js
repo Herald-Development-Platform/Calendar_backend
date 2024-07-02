@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const BaseMongooseSchema = require('./base.schema');
 const { ROLES } = require('../constants/role.constants');
-const { PERMISSIONS } = require('../constants/permissions.constants');
+const { PERMISSIONS, DEFAULT_PERMISSIONS } = require('../constants/permissions.constants');
 
 const userSchema = new BaseMongooseSchema({
   email: {
@@ -67,6 +67,17 @@ userSchema.pre("findById", function (next) {
   delete this.OTP;
   delete this.otpExpiryDate;
   delete this.password;
+  next();
+});
+userSchema.pre("save", function (next) {
+  switch (this.role) {
+    case ROLES.SUPER_ADMIN:
+      this.permissions = DEFAULT_PERMISSIONS.SUPER_ADMIN_PERMISSIONS;
+      break;
+    case ROLES.DEPARTMENT_ADMIN:
+      this.permissions = DEFAULT_PERMISSIONS.DEPARTMENT_ADMIN_PERMISSIONS;
+      break;
+  }
   next();
 });
 userSchema.post("save", function () {

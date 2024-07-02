@@ -1,3 +1,4 @@
+const { DEFAULT_PERMISSIONS } = require("../../constants/permissions.constants");
 const { ROLES } = require("../../constants/role.constants");
 const models = require("../../models/index.model");
 const { StatusCodes } = require("http-status-codes");
@@ -219,7 +220,8 @@ const addAdminToDepartment = async (req, res, next) => {
         const updatedUser = await models.userModel.findByIdAndUpdate(req.params.userId,
             {
                 role: ROLES.DEPARTMENT_ADMIN,
-                department: updatedDepartment._id
+                department: updatedDepartment._id,
+                permissions: DEFAULT_PERMISSIONS.DEPARTMENT_ADMIN_PERMISSIONS
             },
             { new: true }
         )
@@ -258,6 +260,7 @@ const removeAdminFromDepartment = async (req, res, next) => {
         const updatedUser = await models.userModel.findByIdAndUpdate(req.body.userId,
             {
                 role: ROLES.STAFF,
+                permissions: DEFAULT_PERMISSIONS.STAFF_PERMISSIONS
             }
         )
         return res.status(StatusCodes.OK).json({

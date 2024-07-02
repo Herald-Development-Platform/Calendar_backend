@@ -16,13 +16,19 @@ const checkPermissions = (permissionsToCheck) => (req, res, next) => {
             return next();
         }
 
+        const missingPermissions = [];
+
         for (let permission of permissionsToCheck) {
             if (!user.permissions.includes(permission)) {
-                return res.status(StatusCodes.FORBIDDEN).json({
-                    success: false,
-                    message: `The permission ${permission} is required to access this route`,
-                });
+                missingPermissions.push(permission);
             }
+        }
+
+        if (missingPermissions.length>0) {
+            return res.status(StatusCodes.FORBIDDEN).json({
+                success: false,
+                message: `Permissions ${missingPermissions.join(", ")} are missing!`,
+            });
         }
         next();
     } catch (error) {
