@@ -22,7 +22,8 @@ const corsOptions = {
     "http://localhost:8080",
     "https://calendar.codynn.com",
     "http://localhost:7575",
-    "https://calendar-frontend-suen.onrender.com"
+    "https://calendar-frontend-suen.onrender.com",
+    "https://calendar-frontend-tmhj.onrender.com",
   ],
   credentials: true,
 };
