@@ -40,7 +40,7 @@ const getGoogleEvents = (req, res, next) => {
         return res.status(StatusCodes.OK).json({
             success: true,
             message: 'Events fetched successfully',
-            events,
+            data: events,
         });
     });
 

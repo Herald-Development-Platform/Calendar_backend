@@ -12,7 +12,7 @@ const eventSchema = new BaseMongooseSchema({
     description: { type: String, required: true, },
     start: { type: Date, required: true, },
     end: { type: Date, required: true, },
-    location: { type: String, required: true, },
+    location: { type: String },
     recurringType: { type: String, enum: Object.values(RECURRING_TYPES), default: RECURRING_TYPES.NONE },
     recurrenceEnd: { type: Date, default: () => Date.now() + (86400000 * 365) },
     departments: [
