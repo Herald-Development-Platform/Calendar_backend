@@ -19,9 +19,7 @@ const verifyToken = async (req, res, next) => {
     try {
         const { id: userID } = jwt.verify(token, ACCESS_SECRET);
         id = userID?.trim();
-        console.log(id)
     } catch (e) {
-        console.log(e)
         return res.status(StatusCodes.FORBIDDEN).json({ error: "Invalid Token!" });
     }
     if (!id) {

@@ -5,7 +5,6 @@ let CONNECTIONS = [];
 const ACCESS_SECRET = process.env.JWT_SECRET;
 
 const handleWSConnection = (socket) => {
-    console.log("New connection established!");
 
     socket.on("disconnect", () => {
         console.log("A connection has been closed!");
@@ -15,12 +14,10 @@ const handleWSConnection = (socket) => {
     setTimeout(()=>{
         if (!socket.user) {
             socket.disconnect();
-            console.log("Disconnecting the socket as it didn't authenticate.")
         }
     },4000);
 
     socket.on("authenticate", async (token) => {
-        console.log("Connection Authentication Token Event:", token);
         if (!token) {
             return socket.disconnect();
         }
