@@ -75,11 +75,6 @@ const handleGoogleCallback = async (req, res, next) => {
             email: data.email,
         });
 
-        console.log("user", user);
-        console.log("data", data);
-        console.log("encryptedTokens", encryptedTokens);
-        
-
         let token;
         if (user) {
             await models.userModel.updateOne(
