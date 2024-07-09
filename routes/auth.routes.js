@@ -5,6 +5,9 @@ const {
     userRegister,
     userLogin,
     generateNewToken,
+    forgetPassword,
+    resetPassword,
+    changePassword,
 } = require("../controllers/auth/user.auth.controller");
 
 const {
@@ -28,5 +31,10 @@ authRouter.get("/generateNewToken", verifyToken, generateNewToken);
 
 authRouter.get("/googleAuth", getAuthUrl);
 authRouter.get("/googleAuth/callback", handleGoogleCallback);
+
+//Password
+authRouter.post("/forgetPassword", forgetPassword);
+authRouter.post("/resetPassword", resetPassword);
+authRouter.post("/changePassword", verifyToken, changePassword);
 
 module.exports = authRouter;

@@ -6,6 +6,7 @@ const { sendEmail } = require('../services/email.services');
 const { getNewEventNotificationEmailContent } = require('../emails/notification.html');
 const { createNotification } = require('../controllers/notification/notification.controller');
 const { NOTIFICATION_CONTEXT } = require('../constants/notification.constants');
+const { google } = require('googleapis');
 
 const eventSchema = new BaseMongooseSchema({
     title: { type: String, required: true },
@@ -29,9 +30,11 @@ const eventSchema = new BaseMongooseSchema({
             required: true,
         }
     ],
+    googleCalendarId: String,
     color: String,
     notes: String,
     googleId: String,
+    isSynced: { type: Boolean, default: false },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Users',
@@ -68,6 +71,7 @@ eventSchema.pre("save", async function (next) {
     console.log("Department Users in Hook: \n", departmentUsers);
     next();
 });
+
 
 const EventModel = mongoose.model('Events', eventSchema);
 module.exports = EventModel;

@@ -20,7 +20,7 @@ const {
 } = require("../controllers/ics/ics.controller");
 
 const { verifyToken, isGoogleAuthorized } = require("../middlewares/auth.middleware");
-const { getGoogleEvents } = require("../controllers/event/googleCalendar.controller");
+const { getGoogleEvents, syncGoogleEvents } = require("../controllers/event/googleCalendar.controller");
 
 
 eventRouter.post(
@@ -60,5 +60,13 @@ eventRouter.get(
     isGoogleAuthorized,
     getGoogleEvents
 );
+
+eventRouter.post(
+    "/google/sync",
+    verifyToken,
+    isGoogleAuthorized,
+    syncGoogleEvents
+);
+
 
 module.exports = eventRouter;

@@ -31,7 +31,7 @@ const { teacherUpload } = require("../config/multer.config");
 // Profile endpoints
 userRouter.delete("/profile/:id",verifyToken, checkPermissions(PERMISSIONS.DELETE_USER), deleteUser);
 userRouter.get("/profile/all", verifyToken, getAllUsers);
-userRouter.patch("/profile", updateProfile);
+userRouter.patch("/profile", verifyToken, updateProfile);
 userRouter.get("/profile",verifyToken, getProfile);
 
 userRouter.post("/user/addUsers", verifyToken, checkPermissions(PERMISSIONS.CREATE_USER), teacherUpload, uploadUsers);

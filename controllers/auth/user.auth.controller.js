@@ -10,6 +10,7 @@ const { getRegistrationHTML } = require("../../emails/registration.html");
 const { COLLEGEID_REGEX, TEACHER_EMAIL_REGEX } = require("../../constants/regex.constants");
 const { sendEmail } = require("../../services/email.services");
 const { generateOTP } = require("../../services/otp.services");
+const { getForgetPasswordHTML } = require("../../emails/password.html");
 
 const userRegister = async (req, res, next) => {
     try {
@@ -173,9 +174,101 @@ const generateNewToken = async (req, res, next) => {
     }
 }
 
+const forgetPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        let user = await models.userModel.findOne({ email });
+        if (!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+        const OTP = generateOTP();
+        const expiryDate = Date.now() + 5 * 60 * 1000;
+        user.OTP = OTP;
+        user.otpExpiryDate = expiryDate;
+        await user.save();
+        const response = await sendEmail(email, [], [], "Password Reset", getForgetPasswordHTML(user.username, OTP));
+        if (!response.success) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                error: "Error sending email",
+                data: response.error,
+            });
+        }
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Forget Password PIN sent successfully.",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+const resetPassword = async (req, res, next) => {
+    try {
+        const { email, OTP, password } = req.body;
+        let user = await models.userModel.findOne({ email, OTP });
+        if (!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "Invalid PIN",
+            });
+        }
+        if (user.otpExpiryDate < Date.now()) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "PIN expired",
+            });
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user.password = hashedPassword;
+        user.OTP = null;
+        user.otpExpiryDate = null;
+        await user.save();
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Password reset successfully",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+const changePassword = async (req, res, next) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        let user = req.user;
+        const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!passwordMatch) {
+            return res.status(StatusCodes.FORBIDDEN).json({
+                success: false,
+                message: "Old password incorrect!",
+            });
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "Password changed successfully",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+
 module.exports = {
     userRegister,
     userLogin,
     verifyOTP,
     generateNewToken,
+    forgetPassword,
+    resetPassword,
+    changePassword,
 }

@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken');
 const UserModel = require('../models/user.model');
 const { StatusCodes } = require('http-status-codes');
 const { ROLES } = require('../constants/role.constants');
+const { decrypt } = require("../services/encryption.services");
+const { google } = require("googleapis");
 
 const ACCESS_SECRET = process.env.JWT_SECRET;
 
@@ -80,6 +82,27 @@ const isGoogleAuthorized = async (req, res, next) => {
             message: 'User needs to be authorized with google.',
         });
     }
+
+    const { googleTokens } = req.user;
+
+    if (!googleTokens) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+            success: false,
+            message: 'User needs to be authorized with google.',
+        });
+    }
+
+    const decryptedTokens = JSON.parse(decrypt(googleTokens.iv, googleTokens.tokenHash));
+
+    let authClient = new google.auth.OAuth2(
+        process.env.GOOGLE_ID,
+        process.env.GOOGLE_SECRET,
+        `${process.env.BACKEND_BASE_URL}/api/googleAuth/callback`
+    );
+
+    authClient.setCredentials(decryptedTokens);
+    req.googleAuthClient = authClient;
+
     return next();
 };
 

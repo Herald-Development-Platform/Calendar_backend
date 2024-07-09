@@ -1,27 +1,10 @@
 const { StatusCodes } = require("http-status-codes");
 const { decrypt } = require("../../services/encryption.services");
-const { google } = require("googleapis")
+const { google } = require("googleapis");
+const models = require("../../models/index.model");
 
 const getGoogleEvents = (req, res, next) => {
-    const { googleTokens } = req.user;
-    if (!googleTokens) {
-        return res.status(StatusCodes.FORBIDDEN).json({
-            success: false,
-            message: 'User needs to be authorized with google.',
-        });
-    }
-
-    const decryptedTokens = JSON.parse(decrypt(googleTokens.iv, googleTokens.tokenHash));
-
-    let authClient = new google.auth.OAuth2(
-        process.env.GOOGLE_ID,
-        process.env.GOOGLE_SECRET,
-        `${process.env.BACKEND_BASE_URL}/api/googleAuth/callback`
-    );
-    authClient.setCredentials(decryptedTokens);
-
-    const calendar = google.calendar({ version: 'v3', auth: authClient });
-
+    const calendar = google.calendar({ version: 'v3', auth: req.googleAuthClient });
     calendar.events.list({
         calendarId: 'primary',
         timeMin: new Date().toISOString(),
@@ -43,9 +26,59 @@ const getGoogleEvents = (req, res, next) => {
             data: events,
         });
     });
+}
 
+const syncGoogleEvents = async (req, res, next) => {
+    try {
+        const calendar = google.calendar({ version: 'v3', auth: req.googleAuthClient });
+        const unSyncedEvents = await models.eventModel.find({ isSynced: false });
+        const events = await calendar.events.list({
+            calendarId: 'primary',
+            timeMin: new Date().toISOString(),
+            maxResults: 10,
+            singleEvents: true,
+            orderBy: 'startTime',
+        });
+
+        console.log("Unsynced Events", unSyncedEvents);
+
+        const insertedEvents = await Promise.all(unSyncedEvents.map(async (event) => {
+            const newEvent = calendar.events.insert({
+                calendarId: 'primary',
+                auth: req.googleAuthClient,
+                resource: {
+                    summary: event.title,
+                    description: `${event.description}`,
+                    start: {
+                        dateTime: event.startDate,
+                        timeZone: 'Asia/Kathmandu',
+                    },
+                    end: {
+                        dateTime: event.endDate,
+                        timeZone: 'Asia/Kathmandu',
+                    },
+                    // how to insert the location of event. I don't know the key for location
+                    location: event.location,
+                    colorId: event.color,
+                },
+            })
+            await models.eventModel.findByIdAndUpdate(event._id, { isSynced: true, googleCalendarId: newEvent.data.id });
+        }));
+
+        console.log('Inserted Events', insertedEvents);
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: 'Events inserted successfully',
+            data: insertedEvents,
+        });
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
 }
 
 module.exports = {
     getGoogleEvents,
+    syncGoogleEvents,
 }
