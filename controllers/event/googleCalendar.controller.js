@@ -87,7 +87,7 @@ const syncGoogleEvents = async (req, res, next) => {
 
         let importedEvents = await Promise.all(
             calendarEventsUnsynced.map(async (event) => {
-                console.log("GOOGLE EVENT: ", event);
+                // console.log("GOOGLE EVENT: ", event);
                 if (!(event.summary && event.summary?.length > 0)) {
                     return "Summary not found";
                 }
