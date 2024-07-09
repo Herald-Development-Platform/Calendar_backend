@@ -33,9 +33,9 @@ const verifyToken = async (req, res, next) => {
     let user = await UserModel.findById(id).populate('department');
 
     if (!user) {
-        return res.status(StatusCodes.NOT_FOUND).json({
+        return res.status(StatusCodes.UNAUTHORIZED).json({
             success: false,
-            message: 'User not found!',
+            message: 'Authenticated user account not found!',
         });
     }
     req.user = user.toObject();
