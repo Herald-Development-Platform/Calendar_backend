@@ -49,6 +49,10 @@ const userSchema = new BaseMongooseSchema({
     tokenHash: String
   },
   importantDates: [Date],
+  syncWithGoogle: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 userSchema.pre("find", function (next) {
