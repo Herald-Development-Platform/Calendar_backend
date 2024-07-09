@@ -5,6 +5,7 @@ const departmentRequestModel = require("./departmentRequest.model");
 const notificationModel = require("./notification.model");
 const locationModel = require("./location.model");
 const blockModel = require("./block.model");
+const syncedEventModel = require("./syncedEvents.schema");
 
 module.exports = {
     departmentModel,
@@ -13,5 +14,6 @@ module.exports = {
     departmentRequestModel,
     notificationModel,
     locationModel,
-    blockModel
+    blockModel,
+    syncedEventModel,
 }

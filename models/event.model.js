@@ -30,11 +30,8 @@ const eventSchema = new BaseMongooseSchema({
             required: true,
         }
     ],
-    googleCalendarId: String,
     color: String,
     notes: String,
-    googleId: String,
-    isSynced: { type: Boolean, default: false },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Users',
