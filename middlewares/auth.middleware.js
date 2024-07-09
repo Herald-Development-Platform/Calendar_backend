@@ -86,7 +86,7 @@ const isGoogleAuthorized = async (req, res, next) => {
 
     const { googleTokens } = req.user;
 
-    if (!googleTokens || Object.keys(googleTokens).length === 0){
+    if (!googleTokens || !googleTokens.iv || !googleTokens.tokenHash){
         return res.status(StatusCodes.FORBIDDEN).json({
             success: false,
             message: 'User needs to be authorized with google.',
