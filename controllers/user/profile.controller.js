@@ -105,13 +105,13 @@ const updateUser = async (req, res, next) => {
             req.params.userId = user._id;
             return addAdminToDepartment(req, res, next);
         }
+        let updatedUser;
         if (role === ROLES.DEPARTMENT_ADMIN && user.role === ROLES.DEPARTMENT_ADMIN) {
             updatedUser = await userModel.findByIdAndUpdate(user._id, {
                 permissions
             }, { new: true }
             );
         }
-        let updatedUser;
         if (role === ROLES.STAFF) {
             updatedUser = await userModel.findByIdAndUpdate(user._id, {
                 department: departmentData._id,
