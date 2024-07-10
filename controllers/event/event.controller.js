@@ -192,7 +192,7 @@ const deleteEvent = async (req, res, next) => {
 
         if (
             req.user.role === ROLES.SUPER_ADMIN ||
-            event?.departments[0] === req.user.department.toString()
+            event?.departments[0] === req.user.department._id.toString()
         ) {
             const deleted = await models.eventModel.findByIdAndDelete(event._id);
             return res.status(StatusCodes.OK).json({
