@@ -76,7 +76,6 @@ const checkTeacher = (req, res, next) => {
 const isGoogleAuthorized = async (req, res, next) => {
     const userAgain = await UserModel.findById(req.user.id);
     req.user.googleTokens = userAgain.googleTokens;
-    console.log(req.user);
     if (!req.user?.googleTokens) {
         return res.status(StatusCodes.FORBIDDEN).json({
             success: false,

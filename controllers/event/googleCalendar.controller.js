@@ -36,8 +36,6 @@ const syncGoogleEvents = async (req, res, next) => {
         let localSyncedEventIds = localsyncedEvents.map((event) => event.event._id);
         let localUnSyncedEvents = await models.eventModel.find({ _id: { $nin: localSyncedEventIds } });
 
-        console.log("Unsynced Exported: ", localUnSyncedEvents);
-
         let insertedEvents = await Promise.all(localUnSyncedEvents.map(async (event) => {
             const newEvent = await calendar.events.insert({
                 calendarId: 'primary',
@@ -69,7 +67,7 @@ const syncGoogleEvents = async (req, res, next) => {
         }));
 
         localsyncedEvents = localsyncedEvents.concat(insertedEvents);
-        console.log('Inserted Events', insertedEvents);
+
         const currentDate = new Date();
         let calendarEventsUnsynced = await calendar.events.list({
             calendarId: 'primary',
@@ -79,7 +77,6 @@ const syncGoogleEvents = async (req, res, next) => {
             orderBy: 'startTime',
         });
 
-        console.log('Unsynced Events: ', calendarEventsUnsynced.data.items)
 
         calendarEventsUnsynced = calendarEventsUnsynced.data.items.filter((event) => {
             return !localsyncedEvents.find((localEvent) => localEvent.googleEventId === event.id);
@@ -87,17 +84,19 @@ const syncGoogleEvents = async (req, res, next) => {
 
         let importedEvents = await Promise.all(
             calendarEventsUnsynced.map(async (event) => {
-                // console.log("GOOGLE EVENT: ", event);
                 if (!(event.summary && event.summary?.length > 0)) {
                     return "Summary not found";
                 }
+                const startDate = event.start.dateTime || new Date(event.start.date).setHours(0,0,0,0)
+                const endDate = event.end.dateTime || new Date(event.end.date).setHours(23,59,59);
                 const importedEvent = await new models.eventModel({
                     title: event.summary ?? "--",
                     description: event.description ?? "--",
-                    start: event.start.dateTime,
-                    end: event.end.dateTime,
+                    start: startDate,
+                    end: endDate,
                     location: event.location ?? "--",
                     involvedUsers: [req.user.id],
+                    createdBy: req.user.id,
                     // color: event.colorId,
                 }).save();
                 let newSyncedEvent = await new models.syncedEventModel({

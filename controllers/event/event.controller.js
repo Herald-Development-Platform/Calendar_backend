@@ -5,6 +5,40 @@ const { StatusCodes } = require("http-status-codes");
 const { getDepartmentByIdOrCode } = require("../department/department.controller");
 const { RECURRING_TYPES } = require("../../constants/event.constants");
 const { PERMISSIONS } = require("../../constants/permissions.constants");
+const { NOTIFICATION_CONTEXT } = require("../../constants/notification.constants");
+const { getNewEventNotificationEmailContent } = require("../../emails/notification.html");
+const { createNotification } = require("../notification/notification.controller");
+const { sendEmail } = require("../../services/email.services");
+
+
+const sendNewEventCreatedEmail = async (event) => {
+    let departmentUsers = [];
+    await Promise.all(event.departments.map(async department => {
+        const currentDepartmentUsers = await models.userModel.find({ department });
+        departmentUsers = departmentUsers.concat(currentDepartmentUsers);
+    }));
+
+    await Promise.all(event.involvedUsers.map(async userID => {
+        const user = await models.userModel.findById(userID);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        departmentUsers.push(user);
+    }));
+    const superAdminUsers = await models.userModel.find({ role: "SUPER_ADMIN" });
+    departmentUsers = departmentUsers.concat(superAdminUsers);
+    departmentUsers = Array.from(new Set(departmentUsers));
+    departmentUsers = departmentUsers.map(user => {
+        const emailContent = getNewEventNotificationEmailContent(user.username, event);
+        const notification = createNotification({
+            user: user._id,
+            contextId: event._id,
+            context: NOTIFICATION_CONTEXT.NEW_EVENT,
+            message: `New Event Created: ${event.title}`,
+        });
+        sendEmail(user.email, [], [], "New Event Created", emailContent);
+    });
+};
 
 const createEvent = async (req, res, next) => {
     try {
@@ -38,6 +72,8 @@ const createEvent = async (req, res, next) => {
             ...req.body,
             createdBy: req.user._id,
         }).save();
+
+        sendNewEventCreatedEmail(newEvent);
 
         return res.status(StatusCodes.CREATED).json({
             success: true,
@@ -190,7 +226,7 @@ const deleteEvent = async (req, res, next) => {
             });
         }
 
-        if (
+        if ( 
             req.user.role === ROLES.SUPER_ADMIN ||
             event?.departments[0] === req.user.department._id.toString()
         ) {
@@ -261,4 +297,5 @@ module.exports = {
     getEvents,
     deleteEvent,
     updateEvent,
+    sendNewEventCreatedEmail,
 }

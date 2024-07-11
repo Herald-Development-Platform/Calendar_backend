@@ -94,6 +94,7 @@ const getNewEventNotificationEmailContent = (username,event) => {
                     <p>We are pleased to announce that a new event, <strong>${eventName}</strong>, has been scheduled in your department.</p>
                     <div class="event-details">
                         <p><strong>Event Details:</strong></p>
+                        <p><strong>Title:</strong> ${eventName}</p>
                         <p><strong>Date:</strong> ${eventDate}</p>
                         <p><strong>Time:</strong> ${eventTime}</p>
                         <p><strong>Location:</strong> ${eventLocation}</p>

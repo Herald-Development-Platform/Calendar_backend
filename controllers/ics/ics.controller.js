@@ -4,6 +4,7 @@ const models = require("../../models/index.model");
 const { StatusCodes } = require('http-status-codes');
 const { getDepartmentByIdOrCode } = require('../department/department.controller');
 const { ROLES } = require('../../constants/role.constants');
+const { sendNewEventCreatedEmail } = require('../event/event.controller');
 
 const convertEventsToIcs = async (req, res, next) => {
     try {
@@ -82,7 +83,7 @@ const convertEventsToIcs = async (req, res, next) => {
                 console.error(error)
                 return next(error);
             }
-            return res.status(StatusCodes.OK).json({ success: true, message: "Successfully exported to ICS string!" ,data: value });
+            return res.status(StatusCodes.OK).json({ success: true, message: "Successfully exported to ICS string!", data: value });
         });
     } catch (error) {
         return next(error);
@@ -157,7 +158,16 @@ const convertIcsToEvents = async (req, res, next) => {
         }
 
         const savedEvents = await models.eventModel.insertMany(eventsToSave);
-        res.status(StatusCodes.CREATED).json({
+
+        for (let event of savedEvents) {
+            try {
+                sendNewEventCreatedEmail(event);
+            } catch (error) {
+                console.log("ERROR sending email for new events imported: ",error)
+            }
+        }
+
+        return res.status(StatusCodes.CREATED).json({
             success: true,
             message: 'Events saved successfully',
             data: savedEvents

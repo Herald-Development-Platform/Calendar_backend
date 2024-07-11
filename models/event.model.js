@@ -38,37 +38,6 @@ const eventSchema = new BaseMongooseSchema({
     },
 });
 
-eventSchema.pre("save", async function (next) {
-    let departmentUsers = [];
-    await Promise.all(this.departments.map(async department => {
-        const currentDepartmentUsers = await userModel.find({ department });
-        departmentUsers = departmentUsers.concat(currentDepartmentUsers);
-    }));
-
-    await Promise.all(this.involvedUsers.map(async userID => {
-        const user = await userModel.findById(userID);
-        if (!user) {
-            throw new Error('User not found');
-        }
-        departmentUsers.push(user);
-    }));
-    const superAdminUsers = await userModel.find({ role: "SUPER_ADMIN" });
-    departmentUsers = departmentUsers.concat(superAdminUsers);
-    departmentUsers = Array.from(new Set(departmentUsers));
-    departmentUsers = departmentUsers.map(user => {
-        const emailContent = getNewEventNotificationEmailContent(user.username, this);
-        const notification = createNotification({
-            user: user._id,
-            contextId: this._id,
-            context: NOTIFICATION_CONTEXT.NEW_EVENT,
-            message: `New Event Created: ${this.title}`,
-        });
-        sendEmail(user.email, [], [], "New Event Created", emailContent);
-    });
-    console.log("Department Users in Hook: \n", departmentUsers);
-    next();
-});
-
 
 const EventModel = mongoose.model('Events', eventSchema);
 module.exports = EventModel;
