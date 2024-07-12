@@ -52,6 +52,10 @@ const userSchema = new BaseMongooseSchema({
   syncWithGoogle: {
     type: Boolean,
     default: false,
+  },
+  notificationSetting: {
+    type: Boolean,
+    default: true,
   }
 });
 

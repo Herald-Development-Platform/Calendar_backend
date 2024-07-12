@@ -1,0 +1,124 @@
+
+const cron = require("node-cron");
+const { createNotification } = require("../notification/notification.controller");
+const { sendEmail } = require("../../services/email.services");
+const { getUpcomingEmailNotificationContent } = require("../../emails/notification.html");
+const models = require("../../models/index.model");
+const { NOTIFICATION_CONTEXT } = require("../../constants/notification.constants");
+const { timeDifference } = require("../../utils/date.utils");
+const { RECURRING_TYPES } = require("../../constants/event.constants");
+
+const generateOccurrences = (event) => {
+    let occurrences = [];
+    let currentDate = new Date(event.start);
+    const recurrenceEnd = new Date(event.recurrenceEnd);
+
+    const incrementDate = (date, type) => {
+        switch (type) {
+            case RECURRING_TYPES.DAILY:
+                date.setDate(date.getDate() + 1);
+                break;
+            case RECURRING_TYPES.WEEKLY:
+                date.setDate(date.getDate() + 7);
+                break;
+            case RECURRING_TYPES.MONTHLY:
+                date.setMonth(date.getMonth() + 1);
+                break;
+            case RECURRING_TYPES.YEARLY:
+                date.setFullYear(date.getFullYear() + 1);
+                break;
+            default:
+                break;
+        }
+    };
+
+    while (currentDate <= recurrenceEnd) {
+        let occurrence = {
+            ...event.toObject(),
+            start: new Date(currentDate),
+            end: new Date(new Date(currentDate).setMinutes(new Date(currentDate).getMinutes() + (event.end - event.start) / 60000)),
+        };
+        occurrences.push(occurrence);
+        incrementDate(currentDate, event.recurringType);
+    }
+
+    return occurrences;
+};
+
+// schedule a cron job to run every 5 minutes that checks for events that are about to start in 1 hour and sends notification as well as email to the users
+const sendOngoingEventsNotification = async () => {
+    try {
+        let nonRecurringEvents = await models.eventModel.find({
+            recurringType: RECURRING_TYPES.NONE,
+            notifiedDates: { $size: 0, },
+            start: {
+                $gte: new Date(),
+                $lte: new Date(Date.now() + (60 * 60 * 1000)),
+            },
+        }).populate("involvedUsers");
+
+        let recurringEvents = await models.eventModel.find({
+            recurringType: { $ne: RECURRING_TYPES.NONE },
+            recurrenceEnd: { $gte: new Date() + (60 * 60 * 1000) },
+        }).populate("involvedUsers");
+
+        let recurringEventsWithOccurrences = [];
+
+        recurringEvents.forEach(event => {
+            if (new Date(event.start) < new Date()) {
+                return;
+            }
+            
+            if (event.notifiedDates.length > 0 && event.notifiedDates[event.notifiedDates.length - 1] > (new Date() - (60 * 60 * 1000))) {
+                return;
+            }
+
+            const occurrences = generateOccurrences(event);
+            recurringEventsWithOccurrences = recurringEventsWithOccurrences.concat(occurrences);
+        });
+
+        let allEvents = [
+            ...nonRecurringEvents,
+            ...recurringEventsWithOccurrences,
+        ];
+
+        for (let event of allEvents) {
+            const differenceString = timeDifference(event.start);
+            let emailUsers = [];
+            emailUsers = emailUsers.concat(event.involvedUsers);
+            emailUsers = emailUsers.concat(await models.userModel.find({ department: { $in: event.departments } }));
+            if (event.createdBy) {
+                emailUsers = emailUsers.concat(await models.userModel.find({ _id: event.createdBy.toString() }));
+            }
+            for (let user of emailUsers) {
+                if (!user.notificationSetting) {
+                    continue;
+                }
+                await createNotification({
+                    context: NOTIFICATION_CONTEXT.UPCOMING_EVENT,
+                    contextId: event._id,
+                    message: `Event ${event.title} is about to start in ${differenceString}`,
+                    user: user._id,
+                });
+
+                await sendEmail({
+                    to: [user.email],
+                    cc: [],
+                    bcc: [],
+                    subject: `Upcoming Event in ${differenceString}`,
+                    html: getUpcomingEmailNotificationContent(user.username, event),
+                });
+            }
+            await models.eventModel.updateOne({ _id: event._id }, { $push: { notifiedDates: new Date() } });
+        }
+    } catch (error) {
+        console.error("Error in events cron job", error);
+    }
+}
+
+const scheduleOngoingEventsJob = () => cron.schedule("*/5 * * * *", sendOngoingEventsNotification);
+
+module.exports = {
+    sendOngoingEventsNotification,
+    scheduleOngoingEventsJob,
+};

@@ -1,12 +1,6 @@
 const mongoose = require('mongoose');
 const BaseMongooseSchema = require('./base.schema');
 const { RECURRING_TYPES } = require('../constants/event.constants');
-const userModel = require("./user.model");
-const { sendEmail } = require('../services/email.services');
-const { getNewEventNotificationEmailContent } = require('../emails/notification.html');
-const { createNotification } = require('../controllers/notification/notification.controller');
-const { NOTIFICATION_CONTEXT } = require('../constants/notification.constants');
-const { google } = require('googleapis');
 
 const eventSchema = new BaseMongooseSchema({
     title: { type: String, required: true },
@@ -36,6 +30,7 @@ const eventSchema = new BaseMongooseSchema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Users',
     },
+    notifiedDates: [Date],
 });
 
 

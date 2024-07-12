@@ -217,12 +217,12 @@ const getUpcomingEmailNotificationContent = (username,event) => {
                     <p>It is to notify that <strong>${eventName}</strong>, is happening ${remaningTime}</p>
                     <div class="event-details">
                         <p><strong>Event Details:</strong></p>
+                        <p><strong>Title:</strong> ${eventName}</p>
                         <p><strong>Date:</strong> ${eventDate}</p>
                         <p><strong>Time:</strong> ${eventTime}</p>
                         <p><strong>Location:</strong> ${eventLocation}</p>
                         <p><strong>Description:</strong> ${eventDescription}</p>
                     </div>
-                    <p>We hope you can join us and make this event a great success.</p>
                     <p>Best regards,<br>Herald College Kathmandu</p>
                 <svg fill=none viewBox="0 0 33 32"width=70 xmlns=http://www.w3.org/2000/svg>
                     <g clip-path=url(#clip0_1_452)>

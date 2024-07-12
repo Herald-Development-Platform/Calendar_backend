@@ -2,6 +2,10 @@ const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
 const { createServer } = require("http");
+const {
+  scheduleOngoingEventsJob,
+  sendOngoingEventsNotification,
+} = require("./controllers/cron/events.job");
 // Importing intialization functions
 const { connectToMongoDB } = require("./services/database.services");
 
@@ -58,8 +62,10 @@ const startServer = async () => {
     const server = createServer(app); // Actual Web server
     const WSapp = require("socket.io")(server, { cors: corsOptions }); // Websocker Server
     WSapp.on("connection", handleWSConnection);
+
     server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
+      sendOngoingEventsNotification();
     });
 
   } catch (error) {
