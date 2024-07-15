@@ -274,6 +274,9 @@ const updateEvent = async (req, res, next) => {
             const updated = await models.eventModel.findByIdAndUpdate(event._id, req.body, {
                 new: true,
             });
+            if (req.body.notifyUpdate) {
+                // send update notification
+            }
             return res.status(StatusCodes.OK).json({
                 success: true,
                 message: "Event updated successfully",

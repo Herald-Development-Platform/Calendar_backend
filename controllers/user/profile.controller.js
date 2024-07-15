@@ -25,12 +25,18 @@ const updateProfile = async (req, res, next) => {
             });
         }
 
-        const { username, photo, importantDates } = req.body;
+        const {
+            username,
+            photo,
+            importantDates,
+            syncWithGoogle,
+        } = req.body;
 
         const updated = await userModel.findByIdAndUpdate(req.user._id, {
             username,
             photo,
             importantDates,
+            syncWithGoogle,
         }, { new: true });
 
         return res.status(StatusCodes.OK).json({

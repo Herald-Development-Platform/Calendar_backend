@@ -242,12 +242,15 @@ const changePassword = async (req, res, next) => {
     try {
         const { oldPassword, newPassword } = req.body;
         let user = req.user;
-        const passwordMatch = await bcrypt.compare(oldPassword, user.password);
-        if (!passwordMatch) {
-            return res.status(StatusCodes.FORBIDDEN).json({
-                success: false,
-                message: "Old password incorrect!",
-            });
+        user = await models.userModel.findById(user.id);
+        if (user.password) {
+            const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+            if (!passwordMatch) {
+                return res.status(StatusCodes.FORBIDDEN).json({
+                    success: false,
+                    message: "Current password incorrect!",
+                });
+            }
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;
