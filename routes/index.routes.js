@@ -7,6 +7,7 @@ const eventRouter = require("./event.routes");
 const userRouter = require("./user.routes");
 const notificationRouter = require("./notification.routes");
 const commonRouter = require("./common.routes");
+const { semesterRoutes } = require("./semester.routes");
 
 router.use(authRouter);
 router.use(eventRouter);
@@ -14,11 +15,14 @@ router.use(userRouter);
 router.use(departmentRouter);
 router.use(notificationRouter);
 router.use(commonRouter);
+router.use(semesterRoutes);
 
-//Upload Routes
-const { uploadImage, getFile } = require("../controllers/upload/upload.controller");
+const {
+  uploadImage,
+  getFile,
+} = require("../controllers/upload/upload.controller");
+
 router.post("/file", upload.single("image"), uploadImage);
 router.get("/files/:filename", getFile);
-
 
 module.exports = router;
