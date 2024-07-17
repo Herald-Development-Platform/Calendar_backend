@@ -1,11 +1,10 @@
 const { StatusCodes } = require("http-status-codes");
-
-const semesterModal = require("../../models/semester.modal.js");
+const models = require("../../models/index.model.js");
 
 const createSemester = async (req, res, next) => {
   try {
-    const result = await semesterModal.create(req.body);
-    res.status(201).json({
+    const result = await new models.semesterModel(req.body).save();
+    res.status(StatusCodes.CREATED).json({
       sucess: true,
       message: "Create semester successfully.",
       data: result,
@@ -18,10 +17,10 @@ const createSemester = async (req, res, next) => {
 
 const getAllSemester = async (req, res, next) => {
   try {
-    const result = await semesterModal.find({});
+    const result = await models.semesterModel.find({});
     console.log("getSemester", result);
 
-    res.status(200).json({
+    res.status(StatusCodes.OK).json({
       sucess: true,
       message: "Successfully fetched semester.",
       data: result,
@@ -35,18 +34,16 @@ const getAllSemester = async (req, res, next) => {
 const updateSemester = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await semesterModal.findByIdAndUpdate(id, req.body, {
+    const result = await models.semesterModel.findByIdAndUpdate(id, req.body, {
       new: true,
     });
-    console.log("event --- control", result);
-
     if (!result) {
       return res
-        .status(400)
+        .status(StatusCodes.BAD_REQUEST)
         .json({ success: false, message: "Semester not found" });
     }
 
-    res.status(201).json({
+    res.status(StatusCodes.OK).json({
       sucess: true,
       message: "Updated semester successfully.",
       data: result,
@@ -60,16 +57,16 @@ const updateSemester = async (req, res, next) => {
 const deleteSemester = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await semesterModal.findByIdAndDelete(id);
+    const result = await models.semesterModel.findByIdAndDelete(id);
 
     if (!result) {
-      return res.status(400).json({
+      return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         message: "Could not find the semester with that ID.",
       });
     }
 
-    res.status(201).json({
+    res.status(StatusCodes.OK).json({
       sucess: true,
       message: "Deleted semester successfully.",
       data: result,

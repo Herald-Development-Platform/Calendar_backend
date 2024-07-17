@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const BaseMongooseSchema = require("./base.schema");
-const { RECURRING_TYPES } = require("../constants/event.constants");
 
 const semestersSchema = new BaseMongooseSchema({
   semester: { type: String, required: true },

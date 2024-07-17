@@ -6,6 +6,7 @@ const notificationModel = require("./notification.model");
 const locationModel = require("./location.model");
 const blockModel = require("./block.model");
 const syncedEventModel = require("./syncedEvents.schema");
+const semesterModel = require("./semester.model");
 
 module.exports = {
     departmentModel,
@@ -16,4 +17,5 @@ module.exports = {
     locationModel,
     blockModel,
     syncedEventModel,
+    semesterModel,
 }
