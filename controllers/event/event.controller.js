@@ -227,7 +227,7 @@ const getEvents = async (req, res, next) => {
 
     let allEvents = [];
     events.forEach((event) => {
-      if (event.recurringType !== RECURRING_TYPES.NONE && event.recurrenceEnd) {
+      if (event.recurringType !== RECURRING_TYPES.NONE && new Date(event.recurrenceEnd).toString() !== "Invalid Date" && Object.values(RECURRING_TYPES).includes(event.recurringType)) {
         const occurrences = generateOccurrences(event);
         allEvents = allEvents.concat(occurrences);
       } else {
