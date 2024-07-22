@@ -200,12 +200,39 @@ const forgetPassword = async (req, res, next) => {
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "Forget Password PIN sent successfully.",
+            data: email,
         });
     }
     catch (error) {
         next(error);
     }
 }
+
+const validateResetPassword = async (req, res, next) => {
+    try {
+        const { email, OTP } = req.query;
+        let user = await models.userModel.findOne({ email, OTP });
+        if (!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                success: false,
+                message: "Invalid PIN",
+            });
+        }
+        if (user.otpExpiryDate < Date.now()) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "PIN expired",
+            });
+        }
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            message: "PIN verified successfully",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
 
 const resetPassword = async (req, res, next) => {
     try {
@@ -272,6 +299,7 @@ module.exports = {
     verifyOTP,
     generateNewToken,
     forgetPassword,
+    validateResetPassword,
     resetPassword,
     changePassword,
 }

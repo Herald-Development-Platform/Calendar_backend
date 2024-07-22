@@ -8,6 +8,7 @@ const {
     forgetPassword,
     resetPassword,
     changePassword,
+    validateResetPassword,
 } = require("../controllers/auth/user.auth.controller");
 
 const {
@@ -34,6 +35,7 @@ authRouter.get("/googleAuth/callback", handleGoogleCallback);
 
 //Password
 authRouter.post("/forgetPassword", forgetPassword);
+authRouter.post("/validateResetPasswordOTP", validateResetPassword);
 authRouter.post("/resetPassword", resetPassword);
 authRouter.post("/changePassword", verifyToken, changePassword);
 
