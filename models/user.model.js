@@ -59,61 +59,61 @@ const userSchema = new BaseMongooseSchema({
   }
 });
 
-userSchema.pre("find", function (next) {
-  delete this.OTP;
-  delete this.otpExpiryDate;
-  delete this.password;
-  next();
-});
-userSchema.pre("findOne", function (next) {
-  delete this.OTP;
-  delete this.otpExpiryDate;
-  delete this.password;
-  next();
-});
-userSchema.pre("findById", function (next) {
-  delete this.OTP;
-  delete this.otpExpiryDate;
-  delete this.password;
-  next();
-});
-userSchema.pre("save", function (next) {
-  switch (this.role) {
-    case ROLES.SUPER_ADMIN:
-      this.permissions = DEFAULT_PERMISSIONS.SUPER_ADMIN_PERMISSIONS;
-      break;
-    case ROLES.DEPARTMENT_ADMIN:
-      this.permissions = DEFAULT_PERMISSIONS.DEPARTMENT_ADMIN_PERMISSIONS;
-      break;
-  }
-  next();
-});
-userSchema.post("save", function () {
-  delete this.OTP;
-  delete this.otpExpiryDate;
-  delete this.password;
-});
+// userSchema.pre("find", function (next) {
+//   delete this.OTP;
+//   delete this.otpExpiryDate;
+//   delete this.password;
+//   next();
+// });
+// userSchema.pre("findOne", function (next) {
+//   delete this.OTP;
+//   delete this.otpExpiryDate;
+//   delete this.password;
+//   next();
+// });
+// userSchema.pre("findById", function (next) {
+//   delete this.OTP;
+//   delete this.otpExpiryDate;
+//   delete this.password;
+//   next();
+// });
+// userSchema.pre("save", function (next) {
+//   switch (this.role) {
+//     case ROLES.SUPER_ADMIN:
+//       this.permissions = DEFAULT_PERMISSIONS.SUPER_ADMIN_PERMISSIONS;
+//       break;
+//     case ROLES.DEPARTMENT_ADMIN:
+//       this.permissions = DEFAULT_PERMISSIONS.DEPARTMENT_ADMIN_PERMISSIONS;
+//       break;
+//   }
+//   next();
+// });
+// userSchema.post("save", function () {
+//   delete this.OTP;
+//   delete this.otpExpiryDate;
+//   delete this.password;
+// });
 
 // remove the otp, expiry and password on toJSON and toObject
-userSchema.options.toJSON = {
-  transform: function (doc, ret) {
-    delete ret.OTP;
-    delete ret.otpExpiryDate;
-    delete ret.password;
-    delete ret.googleTokens;
-    return ret;
-  }
-};
+// userSchema.options.toJSON = {
+//   transform: function (doc, ret) {
+//     delete ret.OTP;
+//     delete ret.otpExpiryDate;
+//     delete ret.password;
+//     delete ret.googleTokens;
+//     return ret;
+//   }
+// };
 
-userSchema.options.toObject = {
-  transform: function (doc, ret) {
-    delete ret.OTP;
-    delete ret.otpExpiryDate;
-    delete ret.password;
-    delete ret.googleTokens;
-    return ret;
-  }
-};
+// userSchema.options.toObject = {
+//   transform: function (doc, ret) {
+//     delete ret.OTP;
+//     delete ret.otpExpiryDate;
+//     delete ret.password;
+//     delete ret.googleTokens;
+//     return ret;
+//   }
+// };
 
 const UserModel = mongoose.model('Users', userSchema);
 module.exports = UserModel;

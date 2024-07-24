@@ -65,7 +65,7 @@ const userRegister = async (req, res, next) => {
         }).save();
 
         const response = await sendEmail(email, [], [], "Welcome to Herald Intra Calendar", getRegistrationHTML(username, OTP, email));
-        
+
         if (!response.success) {
             await models.userModel.findByIdAndDelete(newuser?._id);
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -184,11 +184,15 @@ const forgetPassword = async (req, res, next) => {
                 message: "User not found",
             });
         }
-        const OTP = generateOTP();
-        const expiryDate = Date.now() + 5 * 60 * 1000;
-        user.OTP = OTP;
-        user.otpExpiryDate = expiryDate;
-        await user.save();
+        const OTP = generateOTP().toString();
+        const expiryDate = new Date(Date.now() + 5 * 60 * 1000);
+        const updatedUser = await models.userModel.findByIdAndUpdate(user._id, {
+            OTP,
+            otpExpiryDate: expiryDate,
+        }, { new: true });
+
+        console.log("OTP: ", OTP);
+        console.log("Updated User: ", updatedUser);
         const response = await sendEmail(email, [], [], "Password Reset", getForgetPasswordHTML(user.username, OTP));
         if (!response.success) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
