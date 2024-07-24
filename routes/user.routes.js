@@ -23,7 +23,7 @@ const {
     PERMISSIONS
 } = require("../constants/permissions.constants");
 
-const { verifyOTP } = require("../controllers/auth/user.auth.controller");
+const { verifyOTP, verifyOTPFromEmail } = require("../controllers/auth/user.auth.controller");
 const { uploadUsers } = require("../controllers/user/import.controller");
 const { teacherUpload } = require("../config/multer.config");
 
@@ -39,6 +39,7 @@ userRouter.put("/user/:id", verifyToken, checkPermissions(PERMISSIONS.UPDATE_USE
 userRouter.patch("/user/:id", verifyToken, checkSuperAdmin, updateUserPermissions);
 
 userRouter.get("/verifyOTP", verifyOTP);
+userRouter.get("/verifyOTPFromEmail", verifyOTPFromEmail);
 
 
 module.exports = userRouter;

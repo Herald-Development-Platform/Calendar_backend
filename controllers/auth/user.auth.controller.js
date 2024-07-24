@@ -158,6 +158,52 @@ const verifyOTP = async (req, res, next) => {
     }
 }
 
+const verifyOTPFromEmail = async (req, res, next) => {
+    try {
+        const { email, OTP } = req.query;
+        const user = await models.userModel.findOne({
+            email,
+            OTP,
+        });
+        if (!user) {
+            return res.send(`
+                <h1>Invalid OTP</h1>
+                <script>
+                    setTimeout(()=>{
+                        window.location.href = "${process.env.FRONTEND_URL}/login";    
+                    },2000);
+                </script>
+            `)
+        }
+        if (user.otpExpiryDate < Date.now()) {
+            await models.userModel.findByIdAndDelete(user._id);
+            return res.send(`
+                <h1>OTP Expired</h1>
+                <script>
+                    setTimeout(()=>{
+                        window.location.href = "${process.env.FRONTEND_URL}/login";    
+                    },2000);
+                </script>
+            `)
+        }
+        user.OTP = null;
+        user.otpExpiryDate = null;
+        user.emailVerified = true;
+        await user.save();
+        return res.redirect(`${process.env.FRONTEND_URL}/login`);
+    }
+    catch (error) {
+        return res.send(`
+            <h1>Error verifying OTP</h1>
+            <script>
+                setTimeout(()=>{
+                    window.location.href = "${process.env.FRONTEND_URL}/login";    
+                },2000);
+            </script>
+        `)
+    }
+}
+
 const generateNewToken = async (req, res, next) => {
     try {
         let user = req.user;
@@ -301,6 +347,7 @@ module.exports = {
     userRegister,
     userLogin,
     verifyOTP,
+    verifyOTPFromEmail,
     generateNewToken,
     forgetPassword,
     validateResetPassword,

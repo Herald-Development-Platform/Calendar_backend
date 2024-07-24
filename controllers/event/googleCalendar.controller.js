@@ -37,33 +37,38 @@ const syncGoogleEvents = async (req, res, next) => {
         let localUnSyncedEvents = await models.eventModel.find({ _id: { $nin: localSyncedEventIds } });
 
         let insertedEvents = await Promise.all(localUnSyncedEvents.map(async (event) => {
-            const newEvent = await calendar.events.insert({
-                calendarId: 'primary',
-                auth: req.googleAuthClient,
-                resource: {
-                    summary: event.title,
-                    description: `${event.description}`,
-                    start: {
-                        dateTime: event.start,
-                        timeZone: 'Asia/Kathmandu',
-                    },
+            try {
+                const newEvent = await calendar.events.insert({
+                    calendarId: 'primary',
+                    auth: req.googleAuthClient,
+                    resource: {
+                        summary: event.title,
+                        description: `${event.description}`,
+                        start: {
+                            dateTime: event.start,
+                            timeZone: 'Asia/Kathmandu',
+                        },
 
-                    end: {
-                        dateTime: event.end,
-                        timeZone: 'Asia/Kathmandu',
+                        end: {
+                            dateTime: event.end,
+                            timeZone: 'Asia/Kathmandu',
+                        },
+                        location: event.location,
+                        // colorId: event.color,
                     },
-                    location: event.location,
-                    // colorId: event.color,
-                },
-            })
-            let newSyncedEvent = await new models.syncedEventModel({
-                user: req.user.id,
-                event: event._id,
-                googleEventId: newEvent.data.id,
-            }).save();
-            newSyncedEvent = newSyncedEvent.toObject();
-            newSyncedEvent.event = event;
-            return newSyncedEvent;
+                })
+                let newSyncedEvent = await new models.syncedEventModel({
+                    user: req.user.id,
+                    event: event._id,
+                    googleEventId: newEvent.data.id,
+                }).save();
+                newSyncedEvent = newSyncedEvent.toObject();
+                newSyncedEvent.event = event;
+                return newSyncedEvent;
+
+            } catch (error) {
+                return { error: error.message, event };
+            }
         }));
 
         localsyncedEvents = localsyncedEvents.concat(insertedEvents);
@@ -87,26 +92,30 @@ const syncGoogleEvents = async (req, res, next) => {
                 if (!(event.summary && event.summary?.length > 0)) {
                     return "Summary not found";
                 }
-                const startDate = event.start.dateTime || new Date(event.start.date).setHours(0,0,0,0)
-                const endDate = event.end.dateTime || new Date(event.end.date).setHours(23,59,59);
-                const importedEvent = await new models.eventModel({
-                    title: event.summary ?? "--",
-                    description: event.description ?? "--",
-                    start: startDate,
-                    end: endDate,
-                    location: event.location ?? "--",
-                    involvedUsers: [req.user.id],
-                    createdBy: req.user.id,
-                    // color: event.colorId,
-                }).save();
-                let newSyncedEvent = await new models.syncedEventModel({
-                    user: req.user.id,
-                    event: importedEvent._id,
-                    googleEventId: event.id,
-                }).save();
-                newSyncedEvent = newSyncedEvent.toObject();
-                newSyncedEvent.event = importedEvent;
-                return newSyncedEvent;
+                try {
+                    const startDate = event.start.dateTime || new Date(event.start.date).setHours(0, 0, 0, 0)
+                    const endDate = event.end.dateTime || new Date(event.end.date).setHours(23, 59, 59);
+                    const importedEvent = await new models.eventModel({
+                        title: event.summary ?? "--",
+                        description: event.description ?? "--",
+                        start: startDate,
+                        end: endDate,
+                        location: event.location ?? "--",
+                        involvedUsers: [req.user.id],
+                        createdBy: req.user.id,
+                        // color: event.colorId,
+                    }).save();
+                    let newSyncedEvent = await new models.syncedEventModel({
+                        user: req.user.id,
+                        event: importedEvent._id,
+                        googleEventId: event.id,
+                    }).save();
+                    newSyncedEvent = newSyncedEvent.toObject();
+                    newSyncedEvent.event = importedEvent;
+                    return newSyncedEvent;
+                } catch (error) {
+                    return { error: error.message, event };
+                }
             })
         );
 

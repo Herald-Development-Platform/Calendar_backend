@@ -30,7 +30,7 @@ const getRegistrationHTML = (username, OTP, email) => {
       <div class=otp>
          <p>Your One-Time Password (OTP) for email verification:</p>
          <strong>${OTP}</strong><br><br><span>Or,</span>
-         <p>You can <a href="${process.env.BACKEND_BASE_URL}/api/verifyOTP?email=${email}&OTP=${OTP}">click here</a> to verify the OTP.
+         <p>You can <a href="${process.env.BACKEND_BASE_URL}/api/verifyOTPFromEmail?email=${email}&OTP=${OTP}">click here</a> to verify the OTP.
       </div>
       <div class=info>
          <p>Please note that this OTP will expire after 5 minutes. If it expires, you will need to sign up again.
