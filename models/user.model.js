@@ -94,7 +94,7 @@ userSchema.post("save", function () {
   delete this.password;
 });
 
-remove the otp, expiry and password on toJSON and toObject
+// remove the otp, expiry and password on toJSON and toObject
 userSchema.options.toJSON = {
   transform: function (doc, ret) {
     delete ret.OTP;
