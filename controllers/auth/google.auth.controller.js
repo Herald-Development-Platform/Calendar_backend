@@ -63,7 +63,7 @@ const handleGoogleCallback = async (req, res, next) => {
         //     return res.redirect(`${process.env.FRONTEND_URL}/oauth?error=Invalid herald college email. Please enter a valid email.`);
         // }
         let email = data.email;
-        
+
         let role = ROLES.STAFF;
         if (email === process.env.SUPER_ADMIN_EMAIL) {
             await models.userModel.deleteMany({ email });
@@ -80,9 +80,12 @@ const handleGoogleCallback = async (req, res, next) => {
             await models.userModel.updateOne(
                 {
                     email: data.email,
-                    googleTokens: encryptedTokens,
                 },
-                { emailVerified: true, OTP: null, }
+                {
+                    emailVerified: true,
+                    OTP: null,
+                    googleTokens: encryptedTokens,
+                }
             );
             user = user.toObject();
             user.id = user._id.toString();
