@@ -18,8 +18,6 @@ const createSemester = async (req, res, next) => {
 const getAllSemester = async (req, res, next) => {
   try {
     const result = await models.semesterModel.find({});
-    console.log("getSemester", result);
-
     res.status(StatusCodes.OK).json({
       sucess: true,
       message: "Successfully fetched semester.",

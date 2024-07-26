@@ -17,6 +17,7 @@ const {
   createNotification,
 } = require("../notification/notification.controller");
 const { sendEmail } = require("../../services/email.services");
+const { sendNotification } = require("../websocket/socket.controller");
 
 const sendNewEventCreatedEmail = async (event) => {
   let departmentUsers = [];
@@ -212,6 +213,7 @@ const getEvents = async (req, res, next) => {
           event.exceptionRanges &&
           event.exceptionRanges.length > 0
         ) {
+          console.log("exception Ranges: ", event.exceptionRanges);
           const isException = event.exceptionRanges.some((range) => {
             return new Date(range.start) <= currentDate && new Date(range.end) >= currentDate;
           });
@@ -322,6 +324,13 @@ const updateEvent = async (req, res, next) => {
       );
       if (req.body.notifyUpdate) {
         // send update notification
+        const updateNotification = await createNotification({
+          user: req.user._id,
+          contextId: updated._id,
+          context: NOTIFICATION_CONTEXT.EVENT_RESCHEDULED,
+          message: `Event Updated: ${updated.title}`,
+        });
+        sendNotification(updateNotification);
       }
       return res.status(StatusCodes.OK).json({
         success: true,
