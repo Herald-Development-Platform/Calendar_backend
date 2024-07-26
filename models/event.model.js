@@ -30,6 +30,12 @@ const eventSchema = new BaseMongooseSchema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Users',
     },
+    exceptionRanges: [
+        {
+            start: { type: Date },
+            end: { type: Date },
+        }
+    ],
     notifiedDates: [Date],
 });
 

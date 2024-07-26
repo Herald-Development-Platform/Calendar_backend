@@ -208,13 +208,25 @@ const getEvents = async (req, res, next) => {
       };
 
       while (currentDate <= recurrenceEnd) {
+        if (
+          event.exceptionRanges &&
+          event.exceptionRanges.length > 0
+        ) {
+          const isException = event.exceptionRanges.some((range) => {
+            return new Date(range.start) <= currentDate && new Date(range.end) >= currentDate;
+          });
+          if (isException) {
+            incrementDate(currentDate, event.recurringType);
+            continue;
+          }
+        }
         let occurrence = {
           ...event.toObject(),
           start: new Date(currentDate),
           end: new Date(
             new Date(currentDate).setMinutes(
               new Date(currentDate).getMinutes() +
-                (event.end - event.start) / 60000
+              (event.end - event.start) / 60000
             )
           ),
         };
