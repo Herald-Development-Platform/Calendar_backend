@@ -102,6 +102,61 @@ const createEvent = async (req, res, next) => {
   }
 };
 
+const generateOccurrences = (event) => {
+  let occurrences = [];
+  let currentDate = new Date(event.start);
+  const recurrenceEnd = new Date(event.recurrenceEnd);
+
+  const incrementDate = (date, type) => {
+    switch (type) {
+      case RECURRING_TYPES.DAILY:
+        date.setDate(date.getDate() + 1);
+        break;
+      case RECURRING_TYPES.WEEKLY:
+        date.setDate(date.getDate() + 7);
+        break;
+      case RECURRING_TYPES.MONTHLY:
+        date.setMonth(date.getMonth() + 1);
+        break;
+      case RECURRING_TYPES.YEARLY:
+        date.setFullYear(date.getFullYear() + 1);
+        break;
+      default:
+        break;
+    }
+  };
+
+  while (currentDate <= recurrenceEnd) {
+    if (
+      event.exceptionRanges &&
+      event.exceptionRanges.length > 0
+    ) {
+      console.log("exception Ranges: ", event.exceptionRanges);
+      const isException = event.exceptionRanges.some((range) => {
+        return new Date(range.start) <= currentDate && new Date(range.end) >= currentDate;
+      });
+      if (isException) {
+        incrementDate(currentDate, event.recurringType);
+        continue;
+      }
+    }
+    let occurrence = {
+      ...event.toObject(),
+      start: new Date(currentDate),
+      end: new Date(
+        new Date(currentDate).setMinutes(
+          new Date(currentDate).getMinutes() +
+          (event.end - event.start) / 60000
+        )
+      ),
+    };
+    occurrences.push(occurrence);
+    incrementDate(currentDate, event.recurringType);
+  }
+
+  return occurrences;
+};
+
 const getEvents = async (req, res, next) => {
   try {
     let { q, colors, eventFrom, eventTo, recurrenceType } = req.query;
@@ -183,61 +238,6 @@ const getEvents = async (req, res, next) => {
         .populate("departments")
         .sort({ start: 1 });
     }
-
-    const generateOccurrences = (event) => {
-      let occurrences = [];
-      let currentDate = new Date(event.start);
-      const recurrenceEnd = new Date(event.recurrenceEnd);
-
-      const incrementDate = (date, type) => {
-        switch (type) {
-          case RECURRING_TYPES.DAILY:
-            date.setDate(date.getDate() + 1);
-            break;
-          case RECURRING_TYPES.WEEKLY:
-            date.setDate(date.getDate() + 7);
-            break;
-          case RECURRING_TYPES.MONTHLY:
-            date.setMonth(date.getMonth() + 1);
-            break;
-          case RECURRING_TYPES.YEARLY:
-            date.setFullYear(date.getFullYear() + 1);
-            break;
-          default:
-            break;
-        }
-      };
-
-      while (currentDate <= recurrenceEnd) {
-        if (
-          event.exceptionRanges &&
-          event.exceptionRanges.length > 0
-        ) {
-          console.log("exception Ranges: ", event.exceptionRanges);
-          const isException = event.exceptionRanges.some((range) => {
-            return new Date(range.start) <= currentDate && new Date(range.end) >= currentDate;
-          });
-          if (isException) {
-            incrementDate(currentDate, event.recurringType);
-            continue;
-          }
-        }
-        let occurrence = {
-          ...event.toObject(),
-          start: new Date(currentDate),
-          end: new Date(
-            new Date(currentDate).setMinutes(
-              new Date(currentDate).getMinutes() +
-              (event.end - event.start) / 60000
-            )
-          ),
-        };
-        occurrences.push(occurrence);
-        incrementDate(currentDate, event.recurringType);
-      }
-
-      return occurrences;
-    };
 
     let allEvents = [];
     events.forEach((event) => {
@@ -351,6 +351,7 @@ const updateEvent = async (req, res, next) => {
 module.exports = {
   createEvent,
   getEvents,
+  generateOccurrences,
   deleteEvent,
   updateEvent,
   sendNewEventCreatedEmail,

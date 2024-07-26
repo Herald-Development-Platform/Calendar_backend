@@ -7,43 +7,8 @@ const models = require("../../models/index.model");
 const { NOTIFICATION_CONTEXT } = require("../../constants/notification.constants");
 const { timeDifference } = require("../../utils/date.utils");
 const { RECURRING_TYPES } = require("../../constants/event.constants");
+const { generateOccurrences } = require("../event/event.controller");
 
-const generateOccurrences = (event) => {
-    let occurrences = [];
-    let currentDate = new Date(event.start);
-    const recurrenceEnd = new Date(event.recurrenceEnd);
-
-    const incrementDate = (date, type) => {
-        switch (type) {
-            case RECURRING_TYPES.DAILY:
-                date.setDate(date.getDate() + 1);
-                break;
-            case RECURRING_TYPES.WEEKLY:
-                date.setDate(date.getDate() + 7);
-                break;
-            case RECURRING_TYPES.MONTHLY:
-                date.setMonth(date.getMonth() + 1);
-                break;
-            case RECURRING_TYPES.YEARLY:
-                date.setFullYear(date.getFullYear() + 1);
-                break;
-            default:
-                break;
-        }
-    };
-
-    while (currentDate <= recurrenceEnd) {
-        let occurrence = {
-            ...event.toObject(),
-            start: new Date(currentDate),
-            end: new Date(new Date(currentDate).setMinutes(new Date(currentDate).getMinutes() + (event.end - event.start) / 60000)),
-        };
-        occurrences.push(occurrence);
-        incrementDate(currentDate, event.recurringType);
-    }
-
-    return occurrences;
-};
 
 // schedule a cron job to run every 5 minutes that checks for events that are about to start in 1 hour and sends notification as well as email to the users
 const sendOngoingEventsNotification = async () => {
