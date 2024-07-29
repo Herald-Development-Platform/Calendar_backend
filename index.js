@@ -28,6 +28,10 @@ const corsOptions = {
     "http://localhost:7575",
     "https://calendar-frontend-suen.onrender.com",
     "https://calendar-frontend-tmhj.onrender.com",
+    "http://10.99.0.35:7575",
+    "http://10.99.0.35:10000",
+    "https://10.99.0.35:7575",
+    "https://10.99.0.35:10000",
   ],
   credentials: true,
 };
