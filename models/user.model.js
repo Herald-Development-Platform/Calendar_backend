@@ -85,6 +85,9 @@ userSchema.pre("save", function (next) {
     case ROLES.DEPARTMENT_ADMIN:
       this.permissions = DEFAULT_PERMISSIONS.DEPARTMENT_ADMIN_PERMISSIONS;
       break;
+    case ROLES.STAFF:
+      this.permissions = DEFAULT_PERMISSIONS.STAFF_PERMISSIONS;
+      break;
   }
   next();
 });

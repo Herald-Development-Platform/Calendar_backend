@@ -3,7 +3,6 @@ require("dotenv").config();
 const cors = require("cors");
 const { createServer } = require("http");
 const {
-  scheduleOngoingEventsJob,
   sendOngoingEventsNotification,
 } = require("./controllers/cron/events.job");
 // Importing intialization functions
