@@ -131,7 +131,7 @@ const generateOccurrences = (event) => {
     }
   };
 
-  console.log("------------------------");
+  // console.log("------------------------");
 
   while (currentDate <= recurrenceEnd) {
     currentDate = new Date(currentDate);
@@ -145,9 +145,9 @@ const generateOccurrences = (event) => {
       const isException = event.exceptionRanges.some((range) => {
         return new Date(range.start).getTime() <= currentDate.getTime() && new Date(range.end).getTime() >= endDate.getTime();
       });
-      console.log("exception Ranges: ", event.exceptionRanges);
-      console.log("currentDate, endDate: ", currentDate, endDate);
-      console.log("isException: ", isException);
+      // console.log("exception Ranges: ", event.exceptionRanges);
+      // console.log("currentDate, endDate: ", currentDate, endDate);
+      // console.log("isException: ", isException);
       if (isException) {
         incrementDate(currentDate, event.recurringType);
         continue;
@@ -206,7 +206,10 @@ const getEvents = async (req, res, next) => {
         query.recurringType = { $regex: new RegExp(recurrenceType, "i") };
       }
       events = await models.eventModel
-        .find({ ...query, recurringType: RECURRING_TYPES.DAILY })
+        .find({
+          ...query,
+          // recurringType: RECURRING_TYPES.DAILY
+        })
         .populate("departments")
         .sort({ start: 1 });
     } else {
@@ -242,7 +245,10 @@ const getEvents = async (req, res, next) => {
         });
       }
       events = await models.eventModel
-        .find({ ...query, recurringType: RECURRING_TYPES.DAILY })
+        .find({
+          ...query,
+          // recurringType: RECURRING_TYPES.DAILY
+        })
         .populate("departments")
         .sort({ start: 1 });
     }
