@@ -84,7 +84,12 @@ const createEvent = async (req, res, next) => {
     }
 
     req.body.departments = Array.from(new Set(departments));
-
+    if (new Date(req.body.start) >= new Date(req.body.end)) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "'start' should be less than 'end'",
+      });
+    }
     const newEvent = await new models.eventModel({
       ...req.body,
       createdBy: req.user._id,
@@ -126,15 +131,23 @@ const generateOccurrences = (event) => {
     }
   };
 
+  console.log("------------------------");
+
   while (currentDate <= recurrenceEnd) {
+    currentDate = new Date(currentDate);
+    let endDate = new Date(
+      currentDate.getTime() + (new Date(event.end).getTime() - new Date(event.start).getTime())
+    );
     if (
       event.exceptionRanges &&
       event.exceptionRanges.length > 0
     ) {
-      console.log("exception Ranges: ", event.exceptionRanges);
       const isException = event.exceptionRanges.some((range) => {
-        return new Date(range.start) <= currentDate && new Date(range.end) >= currentDate;
+        return new Date(range.start).getTime() <= currentDate.getTime() && new Date(range.end).getTime() >= endDate.getTime();
       });
+      console.log("exception Ranges: ", event.exceptionRanges);
+      console.log("currentDate, endDate: ", currentDate, endDate);
+      console.log("isException: ", isException);
       if (isException) {
         incrementDate(currentDate, event.recurringType);
         continue;
@@ -142,13 +155,8 @@ const generateOccurrences = (event) => {
     }
     let occurrence = {
       ...event.toObject(),
-      start: new Date(currentDate),
-      end: new Date(
-        new Date(currentDate).setMinutes(
-          new Date(currentDate).getMinutes() +
-          (event.end - event.start) / 60000
-        )
-      ),
+      start: new Date(currentDate.toISOString()),
+      end: new Date(endDate.toISOString()),
     };
     occurrences.push(occurrence);
     incrementDate(currentDate, event.recurringType);
@@ -198,7 +206,7 @@ const getEvents = async (req, res, next) => {
         query.recurringType = { $regex: new RegExp(recurrenceType, "i") };
       }
       events = await models.eventModel
-        .find(query)
+        .find({ ...query, recurringType: RECURRING_TYPES.DAILY })
         .populate("departments")
         .sort({ start: 1 });
     } else {
@@ -234,7 +242,7 @@ const getEvents = async (req, res, next) => {
         });
       }
       events = await models.eventModel
-        .find(query)
+        .find({ ...query, recurringType: RECURRING_TYPES.DAILY })
         .populate("departments")
         .sort({ start: 1 });
     }
