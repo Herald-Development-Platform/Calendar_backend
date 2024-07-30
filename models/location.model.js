@@ -5,6 +5,7 @@ const locationSchema = new BaseMongooseSchema({
     name: {
         type: String,
         required: true,
+        unique: true,
     },
     block: String,
     description: String,
