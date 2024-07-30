@@ -13,7 +13,7 @@ const {
   REQUEST_STATES,
 } = require("../../constants/departmentRequest.constants");
 const { createNotification } = require("../notification/notification.controller");
-const { NOTIFICATION_CONTEXT } = require("../../constants/notification.constants");
+const { NOTIFICATION_CONTEXT, DONOT_DISTURB_STATE } = require("../../constants/notification.constants");
 
 const createDepartmentRequest = async (req, res, next) => {
   try {
@@ -57,15 +57,23 @@ const createDepartmentRequest = async (req, res, next) => {
       const superAdmin = await models.userModel.findOne({
         role: ROLES.SUPER_ADMIN,
       });
-  
+
       if (superAdmin) {
         admins.push(superAdmin);
       }
     } catch (error) {
-      
+
     }
 
+    admins = admins.filter((admin) => {
+      if (user.donotDisturbState !== DONOT_DISTURB_STATE.DEFAULT && user.notificationExpiry && new Date() < new Date(user.notificationExpiry)) {
+        return false;
+      }
+      return true;
+    });
+
     await Promise.all(admins.map((user) => {
+
       return createNotification({
         user: user._id,
         message: `You have a new department request from ${req.user.username}`,

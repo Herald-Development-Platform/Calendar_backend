@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const BaseMongooseSchema = require('./base.schema');
 const { ROLES } = require('../constants/role.constants');
 const { PERMISSIONS, DEFAULT_PERMISSIONS } = require('../constants/permissions.constants');
+const { DONOT_DISTURB_STATE } = require('../constants/notification.constants');
 
 const userSchema = new BaseMongooseSchema({
   email: {
@@ -53,10 +54,12 @@ const userSchema = new BaseMongooseSchema({
     type: Boolean,
     default: false,
   },
-  notificationSetting: {
-    type: Boolean,
-    default: true,
-  }
+  donotDisturbState: {
+    type: String,
+    enum: Object.values(DONOT_DISTURB_STATE),
+    default: DONOT_DISTURB_STATE.DEFAULT
+  },
+  notificationExpiry: Date,
 });
 
 userSchema.pre("find", function (next) {

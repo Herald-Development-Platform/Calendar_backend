@@ -4,7 +4,7 @@ const { createNotification } = require("../notification/notification.controller"
 const { sendEmail } = require("../../services/email.services");
 const { getUpcomingEmailNotificationContent } = require("../../emails/notification.html");
 const models = require("../../models/index.model");
-const { NOTIFICATION_CONTEXT } = require("../../constants/notification.constants");
+const { NOTIFICATION_CONTEXT, DONOT_DISTURB_STATE } = require("../../constants/notification.constants");
 const { timeDifference } = require("../../utils/date.utils");
 const { RECURRING_TYPES } = require("../../constants/event.constants");
 const { generateOccurrences } = require("../event/event.controller");
@@ -56,7 +56,7 @@ const sendOngoingEventsNotification = async () => {
                 emailUsers = emailUsers.concat(await models.userModel.find({ _id: event.createdBy.toString() }));
             }
             for (let user of emailUsers) {
-                if (!user.notificationSetting) {
+                if (user.donotDisturbState !== DONOT_DISTURB_STATE.DEFAULT && user.notificationExpiry && new Date() < new Date(user.notificationExpiry)) {
                     continue;
                 }
                 await createNotification({

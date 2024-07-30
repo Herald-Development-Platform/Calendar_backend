@@ -23,8 +23,11 @@ const sendNewEventCreatedEmail = async (event) => {
   let departmentUsers = [];
   await Promise.all(
     event.departments.map(async (department) => {
-      const currentDepartmentUsers = await models.userModel.find({
+      let currentDepartmentUsers = await models.userModel.find({
         department,
+      });
+      currentDepartmentUsers = currentDepartmentUsers.filter((user) => {
+        return new Date() >= new Date(user.notificationExpiry);
       });
       departmentUsers = departmentUsers.concat(currentDepartmentUsers);
     })

@@ -30,6 +30,8 @@ const updateProfile = async (req, res, next) => {
             photo,
             importantDates,
             syncWithGoogle,
+            donotDisturbState,
+            notificationExpiry,
         } = req.body;
 
         const updated = await userModel.findByIdAndUpdate(req.user._id, {
@@ -37,6 +39,8 @@ const updateProfile = async (req, res, next) => {
             photo,
             importantDates,
             syncWithGoogle,
+            donotDisturbState,
+            notificationExpiry,
         }, { new: true });
 
         return res.status(StatusCodes.OK).json({
