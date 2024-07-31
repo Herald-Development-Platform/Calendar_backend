@@ -9,6 +9,7 @@ const { RECURRING_TYPES } = require("../../constants/event.constants");
 const { PERMISSIONS } = require("../../constants/permissions.constants");
 const {
   NOTIFICATION_CONTEXT,
+  DONOT_DISTURB_STATE,
 } = require("../../constants/notification.constants");
 const {
   getNewEventNotificationEmailContent,
@@ -27,7 +28,8 @@ const sendNewEventCreatedEmail = async (event) => {
         department,
       });
       currentDepartmentUsers = currentDepartmentUsers.filter((user) => {
-        return new Date() >= new Date(user.notificationExpiry);
+        return user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT
+        || new Date() >= new Date(user.notificationExpiry);
       });
       departmentUsers = departmentUsers.concat(currentDepartmentUsers);
     })
