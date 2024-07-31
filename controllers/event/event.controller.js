@@ -13,6 +13,7 @@ const {
 } = require("../../constants/notification.constants");
 const {
   getNewEventNotificationEmailContent,
+  getEventUpdatedNotificationEmailContent,
 } = require("../../emails/notification.html");
 const {
   createNotification,
@@ -26,10 +27,6 @@ const sendNewEventCreatedEmail = async (event) => {
     event.departments.map(async (department) => {
       let currentDepartmentUsers = await models.userModel.find({
         department,
-      });
-      currentDepartmentUsers = currentDepartmentUsers.filter((user) => {
-        return user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT
-        || new Date() >= new Date(user.notificationExpiry);
       });
       departmentUsers = departmentUsers.concat(currentDepartmentUsers);
     })
@@ -46,6 +43,10 @@ const sendNewEventCreatedEmail = async (event) => {
   );
   const superAdminUsers = await models.userModel.find({ role: "SUPER_ADMIN" });
   departmentUsers = departmentUsers.concat(superAdminUsers);
+  departmentUsers = departmentUsers.filter((user) => {
+    return user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT
+      || new Date() >= new Date(user.notificationExpiry);
+  });
   departmentUsers = Array.from(new Set(departmentUsers));
   departmentUsers = departmentUsers.map((user) => {
     const emailContent = getNewEventNotificationEmailContent(
@@ -59,6 +60,48 @@ const sendNewEventCreatedEmail = async (event) => {
       message: `New Event Created: ${event.title}`,
     });
     sendEmail(user.email, [], [], "New Event Created", emailContent);
+  });
+};
+
+const sendEventUpdatedEmail = async (event) => {
+  let departmentUsers = [];
+  await Promise.all(
+    event.departments.map(async (department) => {
+      let currentDepartmentUsers = await models.userModel.find({
+        department,
+      });
+      departmentUsers = departmentUsers.concat(currentDepartmentUsers);
+    })
+  );
+
+  await Promise.all(
+    event.involvedUsers.map(async (userID) => {
+      const user = await models.userModel.findById(userID);
+      if (!user) {
+        throw new Error("User not found");
+      }
+      departmentUsers.push(user);
+    })
+  );
+  const superAdminUsers = await models.userModel.find({ role: "SUPER_ADMIN" });
+  departmentUsers = departmentUsers.concat(superAdminUsers);
+  departmentUsers = departmentUsers.filter((user) => {
+    return user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT
+      || new Date() >= new Date(user.notificationExpiry);
+  });
+  departmentUsers = Array.from(new Set(departmentUsers));
+  departmentUsers = departmentUsers.map((user) => {
+    const emailContent = getEventUpdatedNotificationEmailContent(
+      user.username,
+      event
+    );
+    const notification = createNotification({
+      user: user._id,
+      contextId: event._id,
+      context: NOTIFICATION_CONTEXT.EVENT_RESCHEDULED,
+      message: `Event Updated: ${event.title}`,
+    });
+    sendEmail(user.email, [], [], "Event Updated", emailContent);
   });
 };
 
@@ -213,7 +256,6 @@ const getEvents = async (req, res, next) => {
       events = await models.eventModel
         .find({
           ...query,
-          // recurringType: RECURRING_TYPES.DAILY
         })
         .populate("departments")
         .sort({ start: 1 });
@@ -252,7 +294,6 @@ const getEvents = async (req, res, next) => {
       events = await models.eventModel
         .find({
           ...query,
-          // recurringType: RECURRING_TYPES.DAILY
         })
         .populate("departments")
         .sort({ start: 1 });
@@ -342,14 +383,7 @@ const updateEvent = async (req, res, next) => {
         }
       );
       if (req.body.notifyUpdate) {
-        // send update notification
-        const updateNotification = await createNotification({
-          user: req.user._id,
-          contextId: updated._id,
-          context: NOTIFICATION_CONTEXT.EVENT_RESCHEDULED,
-          message: `Event Updated: ${updated.title}`,
-        });
-        sendNotification(updateNotification);
+        sendEventUpdatedEmail(updated);
       }
       return res.status(StatusCodes.OK).json({
         success: true,
