@@ -100,10 +100,11 @@ const syncGoogleEvents = async (req, res, next) => {
                         description: event.description ?? "--",
                         start: startDate,
                         end: endDate,
+                        departments: req.user.department ? [req.user.department]: [],
                         location: event.location ?? "--",
                         involvedUsers: [req.user.id],
                         createdBy: req.user.id,
-                        // color: event.colorId,
+                        color: event.colorId ?? "#C2F970",
                     }).save();
                     let newSyncedEvent = await new models.syncedEventModel({
                         user: req.user.id,
