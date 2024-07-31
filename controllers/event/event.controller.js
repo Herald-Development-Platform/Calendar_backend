@@ -138,6 +138,9 @@ const createEvent = async (req, res, next) => {
         message: "'start' should be less than 'end'",
       });
     }
+    if (!req.body.recurrenceEnd) {
+      delete req.body.recurrenceEnd;
+    }
     const newEvent = await new models.eventModel({
       ...req.body,
       createdBy: req.user._id,
