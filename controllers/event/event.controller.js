@@ -1,6 +1,6 @@
 const { ROLES } = require("../../constants/role.constants");
 const models = require("../../models/index.model");
-
+const crypto = require("crypto");
 const { StatusCodes } = require("http-status-codes");
 const {
   getDepartmentByIdOrCode,
@@ -204,7 +204,7 @@ const generateOccurrences = (event) => {
         continue;
       }
     }
-    let nonDuplicateId = `${event._id}-${currentDate.getTime()}`;
+    let nonDuplicateId = `${event._id}-${crypto.randomBytes(4).toString("hex")}`;
     let occurrence = {
       ...event.toObject(),
       start: new Date(currentDate.toISOString()),
