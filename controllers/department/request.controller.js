@@ -66,7 +66,7 @@ const createDepartmentRequest = async (req, res, next) => {
     }
 
     admins = admins.filter((admin) => {
-      if (user.donotDisturbState !== DONOT_DISTURB_STATE.DEFAULT && user.notificationExpiry && new Date() < new Date(user.notificationExpiry)) {
+      if (admin.donotDisturbState !== DONOT_DISTURB_STATE.DEFAULT && admin.notificationExpiry && new Date() < new Date(admin.notificationExpiry)) {
         return false;
       }
       return true;
