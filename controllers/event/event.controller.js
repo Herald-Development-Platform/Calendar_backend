@@ -204,10 +204,13 @@ const generateOccurrences = (event) => {
         continue;
       }
     }
+    let nonDuplicateId = `${event._id}-${currentDate.getTime()}`;
     let occurrence = {
       ...event.toObject(),
       start: new Date(currentDate.toISOString()),
       end: new Date(endDate.toISOString()),
+      _id: nonDuplicateId,
+      id: nonDuplicateId,
     };
     occurrences.push(occurrence);
     incrementDate(currentDate, event.recurringType);
@@ -325,7 +328,7 @@ const getEvents = async (req, res, next) => {
 
 const deleteEvent = async (req, res, next) => {
   try {
-    const event = await models.eventModel.findOne({ _id: req.params.id });
+    const event = await models.eventModel.findOne({ _id: req.params.id.split("-")[0] });
 
     if (!event) {
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -357,7 +360,7 @@ const deleteEvent = async (req, res, next) => {
 
 const updateEvent = async (req, res, next) => {
   try {
-    const event = await models.eventModel.findOne({ _id: req.params.id });
+    const event = await models.eventModel.findOne({ _id: req.params.id.split("-")[0]  });
     if (!event) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
