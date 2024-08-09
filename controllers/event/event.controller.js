@@ -206,7 +206,7 @@ const generateOccurrences = (event) => {
     }
     let nonDuplicateId = `${event._id}-${crypto.randomBytes(4).toString("hex")}`;
     let occurrence = {
-      ...event.toObject(),
+      ...event,
       start: new Date(currentDate.toISOString()),
       end: new Date(endDate.toISOString()),
       _id: nonDuplicateId,
