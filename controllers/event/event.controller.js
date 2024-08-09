@@ -307,7 +307,11 @@ const getEvents = async (req, res, next) => {
 
     let allEvents = [];
     events.map((event) => {
-      event = event.toObject();
+      if (event.toObject) {
+        event = event.toObject();
+      } else {
+        event = { ...event };
+      }
       if (event.color === "#49449C") {
         event.departments = [
           {
