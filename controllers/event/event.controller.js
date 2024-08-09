@@ -378,6 +378,8 @@ const deleteEvent = async (req, res, next) => {
 const updateEvent = async (req, res, next) => {
   try {
     const event = await models.eventModel.findOne({ _id: req.params.id.split("-")[0]  });
+    delete req.body._id;
+    delete req.body.id;
     if (!event) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
@@ -396,6 +398,7 @@ const updateEvent = async (req, res, next) => {
           return departmentData?._id;
         })
       );
+      console.log("event req.params.id: ", event);
       req.body.departments = departmentsIds.filter((val) => val);
 
       const updated = await models.eventModel.findByIdAndUpdate(
