@@ -306,7 +306,20 @@ const getEvents = async (req, res, next) => {
     }
 
     let allEvents = [];
-    events.forEach((event) => {
+    events.map((event) => {
+      event = event.toObject();
+      if (event.color === "#49449C") {
+        event.departments = [
+          {
+            _id: crypto.randomBytes(4).toString("hex"),
+            name: "Google",
+            code: "GOGL",
+            description: "Imported from google calendar",
+            admins: [],
+          },
+          ...(event.departments),
+        ]
+      }
       if (event.recurringType !== RECURRING_TYPES.NONE && new Date(event.recurrenceEnd).toString() !== "Invalid Date" && Object.values(RECURRING_TYPES).includes(event.recurringType)) {
         const occurrences = generateOccurrences(event);
         allEvents = allEvents.concat(occurrences);
