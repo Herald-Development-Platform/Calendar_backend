@@ -29,11 +29,11 @@ const corsOptions = {
     "https://calendar-frontend-tmhj.onrender.com",
     "http://10.99.0.35:7575",
     "http://10.99.0.35:10000",
-    "https://10.99.0.35:7575",
-    "https://10.99.0.35:10000",
-    "https://10.22.2.224:7575",
-    "https://10.22.2.224:10000",
-    "https://10.22.2.224:9787",
+    "http://10.99.0.35:7575",
+    "http://10.99.0.35:10000",
+    "http://10.22.2.224:7575",
+    "http://10.22.2.224:10000",
+    "http://10.22.2.224:9787",
   ],
   credentials: true,
 };
@@ -42,7 +42,9 @@ app.use(cors(corsOptions));
 // routes import
 const mainRouter = require("./routes/index.routes");
 const errorHandler = require("./middlewares/error.middleware");
-const { handleWSConnection } = require("./controllers/websocket/socket.controller");
+const {
+  handleWSConnection,
+} = require("./controllers/websocket/socket.controller");
 
 // Use routes
 app.use("/api", mainRouter);
@@ -50,12 +52,10 @@ app.use("/api", mainRouter);
 app.use(errorHandler);
 
 app.use((req, res) => {
-  res
-    .status(404)
-    .json({
-      success: false,
-      message: `The route '${req.method} ${req.url}' doesn't exists on the API!`
-    });
+  res.status(404).json({
+    success: false,
+    message: `The route '${req.method} ${req.url}' doesn't exists on the API!`,
+  });
 });
 
 connectToMongoDB().then(async () => {
@@ -73,10 +73,7 @@ const startServer = async () => {
       console.log(`Server is running on port ${PORT}`);
       sendOngoingEventsNotification();
     });
-
   } catch (error) {
     console.error("Error while starting the server: ", error);
   }
 };
-
-
