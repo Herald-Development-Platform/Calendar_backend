@@ -24,7 +24,10 @@ const eventSchema = new BaseMongooseSchema({
             required: true,
         }
     ],
-    color: String,
+    color: {
+        type: String,
+        default: '#399AC0',
+    },
     notes: String,
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
