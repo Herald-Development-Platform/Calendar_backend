@@ -24,7 +24,7 @@ const {
 } = require("../constants/permissions.constants");
 
 const { verifyOTP, verifyOTPFromEmail } = require("../controllers/auth/user.auth.controller");
-const { uploadUsers } = require("../controllers/user/import.controller");
+const { uploadUsers, saveUploadedUsers, getUserUploadReport } = require("../controllers/user/import.controller");
 const { teacherUpload } = require("../config/multer.config");
 
 
@@ -34,7 +34,9 @@ userRouter.get("/profile/all", verifyToken, getAllUsers);
 userRouter.patch("/profile", verifyToken, updateProfile);
 userRouter.get("/profile",verifyToken, getProfile);
 
-userRouter.post("/user/addUsers", verifyToken, checkPermissions(PERMISSIONS.CREATE_USER), teacherUpload, uploadUsers);
+userRouter.post("/user/addUsers", verifyToken, checkPermissions(PERMISSIONS.CREATE_USER), teacherUpload, saveUploadedUsers);
+userRouter.get("/userUploadReport/:filename", verifyToken, checkPermissions(PERMISSIONS.CREATE_USER), getUserUploadReport);
+
 userRouter.put("/user/:id", verifyToken, checkPermissions(PERMISSIONS.UPDATE_USER) , updateUser);
 userRouter.patch("/user/:id", verifyToken, checkSuperAdmin, updateUserPermissions);
 
