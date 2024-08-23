@@ -32,6 +32,7 @@ const updateProfile = async (req, res, next) => {
             syncWithGoogle,
             donotDisturbState,
             notificationExpiry,
+            activeSemester,
         } = req.body;
 
         if (syncWithGoogle && !(Boolean(user?.googleTokens?.tokenHash))) {
@@ -48,6 +49,7 @@ const updateProfile = async (req, res, next) => {
             syncWithGoogle,
             donotDisturbState,
             notificationExpiry,
+            activeSemester,
         }, { new: true });
 
         return res.status(StatusCodes.OK).json({

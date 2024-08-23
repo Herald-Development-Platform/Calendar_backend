@@ -60,6 +60,7 @@ const userSchema = new BaseMongooseSchema({
     default: DONOT_DISTURB_STATE.DEFAULT
   },
   notificationExpiry: Date,
+  activeSemester: String,
 });
 
 userSchema.pre("find", function (next) {
