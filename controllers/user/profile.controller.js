@@ -34,6 +34,13 @@ const updateProfile = async (req, res, next) => {
             notificationExpiry,
         } = req.body;
 
+        if (syncWithGoogle && !(Boolean(user?.googleTokens?.tokenHash))) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "Please login with google to sync your calendar",
+            });
+        }
+
         const updated = await userModel.findByIdAndUpdate(req.user._id, {
             username,
             photo,
