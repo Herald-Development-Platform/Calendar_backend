@@ -1,18 +1,21 @@
-const mongoose = require('mongoose');
-const BaseMongooseSchema = require('./base.schema');
-const { ROLES } = require('../constants/role.constants');
-const { PERMISSIONS, DEFAULT_PERMISSIONS } = require('../constants/permissions.constants');
-const { DONOT_DISTURB_STATE } = require('../constants/notification.constants');
+const mongoose = require("mongoose");
+const BaseMongooseSchema = require("./base.schema");
+const { ROLES } = require("../constants/role.constants");
+const {
+  PERMISSIONS,
+  DEFAULT_PERMISSIONS,
+} = require("../constants/permissions.constants");
+const { DONOT_DISTURB_STATE } = require("../constants/notification.constants");
 
 const userSchema = new BaseMongooseSchema({
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   emailVerified: {
     type: Boolean,
-    default: false
+    default: false,
   },
   password: String,
   username: {
@@ -28,26 +31,26 @@ const userSchema = new BaseMongooseSchema({
   },
   department: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Departments'
+    ref: "Departments",
   },
   permissions: [
     {
       type: String,
       enum: Object.values(PERMISSIONS),
       required: true,
-    }
+    },
   ],
   OTP: {
     type: String,
-    default: null
+    default: null,
   },
   otpExpiryDate: {
     type: Date,
-    default: null
+    default: null,
   },
   googleTokens: {
     iv: String,
-    tokenHash: String
+    tokenHash: String,
   },
   importantDates: [Date],
   syncWithGoogle: {
@@ -57,10 +60,10 @@ const userSchema = new BaseMongooseSchema({
   donotDisturbState: {
     type: String,
     enum: Object.values(DONOT_DISTURB_STATE),
-    default: DONOT_DISTURB_STATE.DEFAULT
+    default: DONOT_DISTURB_STATE.DEFAULT,
   },
   notificationExpiry: Date,
-  activeSemester: String,
+  activeSemester: [String],
 });
 
 userSchema.pre("find", function (next) {
@@ -109,7 +112,7 @@ userSchema.options.toJSON = {
     delete ret.password;
     delete ret.googleTokens;
     return ret;
-  }
+  },
 };
 
 userSchema.options.toObject = {
@@ -119,8 +122,8 @@ userSchema.options.toObject = {
     delete ret.password;
     delete ret.googleTokens;
     return ret;
-  }
+  },
 };
 
-const UserModel = mongoose.model('Users', userSchema);
+const UserModel = mongoose.model("Users", userSchema);
 module.exports = UserModel;
