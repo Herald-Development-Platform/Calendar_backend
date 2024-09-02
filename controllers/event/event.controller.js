@@ -354,9 +354,6 @@ const deleteEvent = async (req, res, next) => {
       });
     }
 
-    console.log("event: ", event);
-    console.log("req.user: ", req.user);
-
     if (
       req.user.role === ROLES.SUPER_ADMIN ||
       event?.createdBy?.toString() === req.user?.id?.toString() ||
@@ -393,7 +390,8 @@ const updateEvent = async (req, res, next) => {
 
     if (
       req.user.role === ROLES.SUPER_ADMIN ||
-      event?.departments[0] === req.user?.department?._id?.toString()
+      event?.createdBy?.toString() === req.user?.id?.toString() ||
+      event?.departments[0]?.toString() === req.user.department._id.toString()
     ) {
       const departmentCodes = req.body.departments;
       let departmentsIds = await Promise.all(
