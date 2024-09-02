@@ -149,7 +149,7 @@ const convertIcsToEvents = async (req, res, next) => {
                     createdBy: req.user.id,
                     departments: departmentIds,
                     involvedUsers: existingUserIds,
-                    color: event.color || '',
+                    color: event.color || '#49449C',
                     notes: event.notes || ''
                 });
 
