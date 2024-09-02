@@ -14,6 +14,7 @@ const {
 const {
   getNewEventNotificationEmailContent,
   getEventUpdatedNotificationEmailContent,
+  getEventDeletedNotificationEmailContent,
 } = require("../../emails/notification.html");
 const {
   createNotification,
@@ -359,7 +360,33 @@ const deleteEvent = async (req, res, next) => {
       event?.createdBy?.toString() === req.user?.id?.toString() ||
       event?.departments[0]?.toString() === req.user.department._id.toString()
     ) {
+      const notificationUsers = await models.userModel.find({
+        $or: [
+          { department: { $in: event.departments } },
+          { _id: { $in: event.involvedUsers } },
+        ],
+      });
+
       const deleted = await models.eventModel.findByIdAndDelete(event._id);
+
+      notificationUsers.map((user) => {
+        createNotification({
+          user: user._id,
+          contextId: event._id,
+          context: NOTIFICATION_CONTEXT.EVENT_CANCELLED,
+          message: `Event Deleted: ${event.title}`,
+        });
+
+        sendEmail(
+          [user?.email],
+          [],
+          [],
+          "Event Cancelled",
+          getEventDeletedNotificationEmailContent(user?.username, event?.toObject())
+        );
+      });
+
+
       return res.status(StatusCodes.OK).json({
         success: true,
         message: "Event deleted successfully",
@@ -378,7 +405,7 @@ const deleteEvent = async (req, res, next) => {
 
 const updateEvent = async (req, res, next) => {
   try {
-    const event = await models.eventModel.findOne({ _id: req.params.id.split("-")[0]  });
+    const event = await models.eventModel.findOne({ _id: req.params.id.split("-")[0] });
     delete req.body._id;
     delete req.body.id;
     if (!event) {
