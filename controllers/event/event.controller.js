@@ -264,7 +264,7 @@ const getEvents = async (req, res, next) => {
         .find({
           ...query,
         })
-        .populate("departments")
+        .populate("departments").populate("createdBy")
         .sort({ start: 1 });
     } else {
       query = {
@@ -302,7 +302,7 @@ const getEvents = async (req, res, next) => {
         .find({
           ...query,
         })
-        .populate("departments")
+        .populate("departments").populate("createdBy")
         .sort({ start: 1 });
     }
 
