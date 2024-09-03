@@ -2,10 +2,12 @@
 const router = require('express').Router();
 
 
+const { excelUpload } = require('../config/multer.config');
 const { PERMISSIONS } = require('../constants/permissions.constants');
 // Location Routes
 
 const locationController = require('../controllers/common.controller');
+const { saveUploadedLocations } = require('../controllers/import/locationImport.controller');
 const { verifyToken } = require('../middlewares/auth.middleware');
 const { checkPermissions } = require('../middlewares/permission.middleware');
 
@@ -14,6 +16,14 @@ router.post(
     verifyToken,
     checkPermissions(PERMISSIONS.CREATE_LOCATION),
     locationController.createLocation
+);
+
+router.post(
+    "/location/upload",
+    verifyToken,
+    checkPermissions(PERMISSIONS.CREATE_LOCATION),
+    excelUpload,
+    saveUploadedLocations,
 );
 
 router.get(

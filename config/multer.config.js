@@ -18,12 +18,21 @@ const userUploadStorage = multer.diskStorage({
     },
 });
 
-const teacherUpload = multer({
+const excelUpload = multer({
     storage: userUploadStorage,
-    // fileFilter: uploadFilter,
+    fileFilter: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        const allowedExtensions = [".xlsx", ".xls", ".csv", ".ods"];
+        
+        if (!allowedExtensions.includes(ext)) {
+            return cb(new Error("Only excel files are allowed!"));
+        }
+
+        cb(null, true);
+    },
 }).fields([{ name: "file", maxCount: 1 }]);
 
 
 module.exports = {
-    teacherUpload,
+    excelUpload,
 };

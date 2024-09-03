@@ -8,7 +8,7 @@ const createBlock = async (req, res, next) => {
         return res.status(StatusCodes.CREATED).json({
             success: true,
             message: 'Block created successfully',
-            data: block
+            data: block,
         });
     } catch (error) {
         next(error);
