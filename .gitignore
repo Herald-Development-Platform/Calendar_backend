@@ -10,3 +10,5 @@ database/calendar_data/*
 test.json
 
 uploads/*
+
+database/calendar_data/*

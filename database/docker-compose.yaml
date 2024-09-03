@@ -1,0 +1,21 @@
+version: '3.1'
+
+services:
+  mongo:
+    image: mongo
+    container_name: calendar-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "9000:27017"
+    volumes:
+      - ./calendar-data:/data/db
+    networks:
+      - calendar-network
+
+volumes:
+  calendar-data:
+
+networks:
+  calendar-network:
