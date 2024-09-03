@@ -11,4 +11,6 @@ test.json
 
 uploads/*
 
-database/calendar_data/*
+database/calendar-data
+database/calendar-data/*
+database/.env
