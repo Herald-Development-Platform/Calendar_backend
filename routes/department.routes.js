@@ -23,6 +23,8 @@ const {
     getDepartmentRequests,
     updateRequestStatus,
 } = require("../controllers/department/request.controller");
+const { saveUploadedDepartments } = require('../controllers/import/departmentImport.controller');
+const { excelUpload } = require('../config/multer.config');
 
 departmentRouter.post(
     "/department/request",
@@ -51,6 +53,14 @@ departmentRouter.get(
     "/department",
     verifyToken,
     getDepartments
+);
+
+departmentRouter.post(
+    "/department/upload",
+    verifyToken,
+    checkPermissions(PERMISSIONS.CREATE_DEPARTMENT),
+    excelUpload,
+    saveUploadedDepartments,
 );
 
 departmentRouter.post(

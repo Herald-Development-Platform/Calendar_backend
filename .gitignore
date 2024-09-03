@@ -14,3 +14,4 @@ uploads/*
 database/calendar-data
 database/calendar-data/*
 database/.env
+superadminEmails.json
