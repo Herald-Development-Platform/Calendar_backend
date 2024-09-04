@@ -1,5 +1,7 @@
 const semesterRoutes = require("express").Router();
+const { excelUpload } = require("../config/multer.config");
 const { PERMISSIONS } = require("../constants/permissions.constants");
+const { saveUploadedSemesters } = require("../controllers/import/semesterImport.controller");
 const SemesterController = require("../controllers/semesters/semester.controller");
 const { verifyToken } = require("../middlewares/auth.middleware");
 const { checkPermissions } = require("../middlewares/permission.middleware");
@@ -9,6 +11,14 @@ semesterRoutes.post(
     verifyToken,
     checkPermissions([PERMISSIONS.CREATE_SEMESTER]),
     SemesterController.createSemester
+);
+
+semesterRoutes.post(
+    "/semester/upload",
+    verifyToken,
+    checkPermissions([PERMISSIONS.CREATE_SEMESTER]),
+    excelUpload,
+    saveUploadedSemesters,
 );
 
 semesterRoutes.get(

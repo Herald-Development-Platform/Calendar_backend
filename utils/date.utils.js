@@ -40,7 +40,19 @@ function timeDifference(input) {
     }
 }
 
+function convertExcelDateToJSDate(excelDate) {
+    if (typeof excelDate === "string") {
+        excelDate = parseFloat(excelDate);
+    }
+    if (!excelDate) {
+        return null;
+    }
+    const excelEpoch = new Date(1900, 0, 1);
+    const jsDate = new Date(excelEpoch.getTime() + (excelDate - 2) * 24 * 60 * 60 * 1000);
+    return jsDate;
+}
 
 module.exports = {
-    timeDifference
+    timeDifference,
+    convertExcelDateToJSDate,
 };

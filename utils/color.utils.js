@@ -19,7 +19,20 @@ function colorDifference(hex1, hex2) {
 
     return Math.sqrt(rDiff + gDiff + bDiff);
 }
+
+function getRandomColor() {
+    let letters = '0123456789ABCDEF';
+    let color = '#';
+
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+
+    return color;
+}
+
 module.exports = {
     hexToRgb,
     colorDifference,
+    getRandomColor,
 }
