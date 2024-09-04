@@ -16,7 +16,6 @@ const extractSemesterData = async ({
   let rowValidated = {};
   Object.keys(row).forEach((value) => {
     let newKey = value.trim().toLowerCase().replaceAll(/[^a-zA-Z0-9]/ig, "");
-    // row[value] = row[value]?.toString();
     switch (newKey) {
       case "semester":
       case "semestername":
