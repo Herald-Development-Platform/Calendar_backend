@@ -16,6 +16,13 @@ let authClient = new google.auth.OAuth2(
     `${process.env.BACKEND_BASE_URL}/api/googleAuth/callback`
 );
 
+if (!process.env.SUPER_ADMIN_EMAILS) {
+    throw new Error("SUPER_ADMIN_EMAILS is not defined in .env file");
+}
+
+const SUPER_ADMIN_EMAILS = process.env.SUPER_ADMIN_EMAILS?.toLowerCase().split(",");
+
+
 const getAuthUrl = (req, res, next) => {
     const authURL = authClient.generateAuthUrl({
         access_type: 'offline',
@@ -65,8 +72,8 @@ const handleGoogleCallback = async (req, res, next) => {
         let email = data.email;
 
         let role = ROLES.STAFF;
-        if (email === process.env.SUPER_ADMIN_EMAIL) {
-            await models.userModel.deleteMany({ role: ROLES.SUPER_ADMIN, email: { $ne: email } });
+        if (SUPER_ADMIN_EMAILS.includes(email)) {
+            // await models.userModel.deleteMany({ role: ROLES.SUPER_ADMIN, email: { $ne: email } });
             role = ROLES.SUPER_ADMIN;
         }
 

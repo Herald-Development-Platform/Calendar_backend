@@ -17,6 +17,7 @@ const extractUserData = async ({
   sheetName,
   rowIndex,
   departments,
+  userDepartment,
 }) => {
   let rowValidated = {};
   Object.keys(row).forEach((value) => {
@@ -48,12 +49,16 @@ const extractUserData = async ({
       case "departments":
       case "branch":
       case "section":
-        const foundDepartment = departments.find((val) => {
-          let regex = new RegExp(row[value], "ig");
-          return regex.test(val.name) || regex.test(val.code);
-        })
-        if (foundDepartment) {
-          rowValidated["department"] = foundDepartment._id;
+        if (userDepartment) {
+          rowValidated["department"] = userDepartment;
+        } else {
+          const foundDepartment = departments.find((val) => {
+            let regex = new RegExp(row[value], "ig");
+            return regex.test(val.name) || regex.test(val.code);
+          })
+          if (foundDepartment) {
+            rowValidated["department"] = foundDepartment._id;
+          }
         }
         break;
       default:
@@ -115,6 +120,10 @@ const saveUploadedUsers = async (req, res, next) => {
 
     let departments = await models.departmentModel.find({});
     departments = departments.map(department => department.toObject());
+
+    let userDepartment = req.user?.department;
+
+    console.log("User Department", userDepartment);
     
     let extracted = await Promise.all(
       data.map((row) =>
@@ -123,6 +132,7 @@ const saveUploadedUsers = async (req, res, next) => {
           sheetName: row.sheetName,
           rowIndex: row.rowIndex,
           departments,
+          userDepartment,
         })
       )
     );

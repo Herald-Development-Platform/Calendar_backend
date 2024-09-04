@@ -12,6 +12,13 @@ const { sendEmail } = require("../../services/email.services");
 const { generateOTP } = require("../../services/otp.services");
 const { getForgetPasswordHTML } = require("../../emails/password.html");
 
+if (!process.env.SUPER_ADMIN_EMAILS) {
+    throw new Error("SUPER_ADMIN_EMAILS is not defined in .env file");
+}
+
+const SUPER_ADMIN_EMAILS = process.env.SUPER_ADMIN_EMAILS?.toLowerCase().split(",") ?? "";
+
+
 const userRegister = async (req, res, next) => {
     try {
         const {
@@ -46,7 +53,7 @@ const userRegister = async (req, res, next) => {
         // }
 
         let role = ROLES.STAFF;
-        if (email === process.env.SUPER_ADMIN_EMAIL) {
+        if (SUPER_ADMIN_EMAILS.includes(email)) {
             role = ROLES.SUPER_ADMIN;
         }
 

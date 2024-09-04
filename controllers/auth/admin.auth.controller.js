@@ -8,10 +8,11 @@ const {
     ROLES
 } = require("../../constants/role.constants");
 
-const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL;
-if (!SUPER_ADMIN_EMAIL) {
-    throw new Error("SUPER_ADMIN_EMAIL is not defined in .env file");
+if (!process.env.SUPER_ADMIN_EMAILS) {
+    throw new Error("SUPER_ADMIN_EMAILS is not defined in .env file");
 }
+
+const SUPER_ADMIN_EMAILS = process.env.SUPER_ADMIN_EMAILS?.toLowerCase().split(",") ?? "";
 
 const adminRegister = async (req, res, next) => {
     try {
@@ -27,7 +28,7 @@ const adminRegister = async (req, res, next) => {
             await models.userModel.deleteMany(alreadyExistingAdmin._id);
         }
 
-        if (email !== SUPER_ADMIN_EMAIL) {
+        if (SUPER_ADMIN_EMAILS && !SUPER_ADMIN_EMAILS?.includes(email)) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "Super admin email configuration failed.",
