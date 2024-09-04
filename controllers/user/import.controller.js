@@ -49,16 +49,12 @@ const extractUserData = async ({
       case "departments":
       case "branch":
       case "section":
-        if (userDepartment) {
-          rowValidated["department"] = userDepartment;
-        } else {
-          const foundDepartment = departments.find((val) => {
-            let regex = new RegExp(row[value], "ig");
-            return regex.test(val.name) || regex.test(val.code);
-          })
-          if (foundDepartment) {
-            rowValidated["department"] = foundDepartment._id;
-          }
+        const foundDepartment = departments.find((val) => {
+          let regex = new RegExp(row[value], "ig");
+          return regex.test(val.name) || regex.test(val.code);
+        })
+        if (foundDepartment) {
+          rowValidated["department"] = foundDepartment._id;
         }
         break;
       default:
@@ -77,6 +73,11 @@ const extractUserData = async ({
   }
   if (!result.data.username) {
     result.reason = "Couldn't read the 'username' of user!";
+  }
+  if (result.data.department) {
+    if (userDepartment && result.data.department.toString() !== userDepartment?._id.toString()) {
+      result.reason = "You cannot create users for other departments!";
+    }
   }
   if (result.reason) {
     result.success = false;
