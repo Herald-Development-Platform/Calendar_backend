@@ -2,6 +2,13 @@ const userModel = require("../../models/user.model");
 const { StatusCodes } = require("http-status-codes");
 const { getDepartmentByIdOrCode, addAdminToDepartment } = require("../department/department.controller");
 const { ROLES } = require("../../constants/role.constants");
+const { DEFAULT_PERMISSIONS } = require("../../constants/permissions.constants");
+const { getImportRegistrationHTML } = require("../../emails/registration.html");
+const { sendEmail } = require("../../services/email.services");
+const { generateRandomString } = require("../../utils/string.utils");
+const bcrypt = require("bcrypt");
+
+
 const getProfile = async (req, res, next) => {
     try {
         const user = await userModel.findById(req.user._id).populate("department");
@@ -14,6 +21,88 @@ const getProfile = async (req, res, next) => {
         next(error);
     }
 }
+
+const createUser = async (req, res, next) => {
+    try {
+        let {
+            username,
+            email,
+            photo,
+            role,
+            department,
+        } = req.body;
+
+        role = role ? role?.toString().toUpperCase().trim() : ROLES.STAFF;
+
+        if (Object.values(ROLES).indexOf(role) === -1) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "Validation Error, Invalid role",
+                data: [
+                    {
+                        path: "role",
+                        message: `Invalid role, valid values : ${Object.values(ROLES).join(", ")}`,
+                    }
+                ]
+            });
+        }
+
+        let emailVerified = true;
+        let permissions = DEFAULT_PERMISSIONS[`${role}_PERMISSIONS`];
+
+        if (role !== ROLES.SUPER_ADMIN && department?.toString() === req.user?.department?._id?.toString()) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "You are not authorized to create a user in other department",
+            });
+        }
+
+        const departmentData = await getDepartmentByIdOrCode(department);
+
+        if (!departmentData.success) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "Department not found",
+            });
+        }
+
+        const alreadyExistingUser = await userModel.findOne({
+            email: { $regex: new RegExp(email, "i") }
+        });
+
+        if (alreadyExistingUser) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "User already exists with email!",
+            });
+        }
+
+        const randomPassword = generateRandomString(8);
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+        const newUser = new userModel({
+            email,
+            emailVerified,
+            username,
+            password: hashedPassword,
+            photo,
+            role,
+            department: departmentData?.data?._id,
+            permissions,
+        }).save();
+
+        const emailResponse = await sendEmail(email, [], [], "Welcome to Herald Intra Calendar" ,getImportRegistrationHTML(username, email, randomPassword));
+
+        return res.status(StatusCodes.CREATED).json({
+            success: true,
+            message: "User created successfully",
+            data: newUser,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
 
 const updateProfile = async (req, res, next) => {
     try {
@@ -214,6 +303,7 @@ module.exports = {
     getProfile,
     updateProfile,
     getAllUsers,
+    createUser,
     updateUser,
     deleteUser,
     updateUserPermissions,

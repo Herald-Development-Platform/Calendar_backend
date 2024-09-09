@@ -7,6 +7,7 @@ const {
     updateUser,
     deleteUser,
     updateUserPermissions,
+    createUser,
 } = require("../controllers/user/profile.controller");
 
 const {
@@ -29,15 +30,22 @@ const { excelUpload } = require("../config/multer.config");
 
 
 // Profile endpoints
-userRouter.delete("/profile/:id",verifyToken, checkPermissions(PERMISSIONS.DELETE_USER), deleteUser);
+userRouter.delete("/profile/:id", verifyToken, checkPermissions(PERMISSIONS.DELETE_USER), deleteUser);
 userRouter.get("/profile/all", verifyToken, getAllUsers);
 userRouter.patch("/profile", verifyToken, updateProfile);
-userRouter.get("/profile",verifyToken, getProfile);
+userRouter.get("/profile", verifyToken, getProfile);
 
+userRouter.post(
+    "/user",
+    verifyToken,
+    checkPermissions(PERMISSIONS.CREATE_USER),
+    createUser,
+)
 userRouter.post("/user/addUsers", verifyToken, checkPermissions(PERMISSIONS.CREATE_USER), excelUpload, saveUploadedUsers);
 userRouter.get("/userUploadReport/:filename", verifyToken, checkPermissions(PERMISSIONS.CREATE_USER), getUserUploadReport);
 
-userRouter.put("/user/:id", verifyToken, checkPermissions(PERMISSIONS.UPDATE_USER) , updateUser);
+
+userRouter.put("/user/:id", verifyToken, checkPermissions(PERMISSIONS.UPDATE_USER), updateUser);
 userRouter.patch("/user/:id", verifyToken, checkSuperAdmin, updateUserPermissions);
 
 userRouter.get("/verifyOTP", verifyOTP);

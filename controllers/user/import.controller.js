@@ -148,13 +148,6 @@ const saveUploadedUsers = async (req, res, next) => {
       });
     }
 
-    // console.log("Valid Rows", validRows);
-    // return res.status(StatusCodes.OK).json({
-    //   success: true,
-    //   message: "All rows validated successfully!",
-    //   data: validRows,
-    // });
-
     const insertedUsers = await Promise.all(
       validRows.map(async (row) => {
         const randomPassword = generateRandomString(8);
