@@ -88,6 +88,7 @@ const extractUserData = async ({
   if (result.success) {
     const alreadyExistingUser = await models.userModel.findOne({
       email: result.data.email.trim().toLowerCase(),
+      emailVerified: true,
     });
 
     if (alreadyExistingUser) {
@@ -153,6 +154,10 @@ const saveUploadedUsers = async (req, res, next) => {
         const randomPassword = generateRandomString(8);
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
+        const deletedAlreadyUnverifiedUser = await models.userModel.deleteMany({
+          email: row.data.email,
+          emailVerified: false,
+        });
         const newUser = await new models.userModel({
           ...row.data,
           password: hashedPassword,
