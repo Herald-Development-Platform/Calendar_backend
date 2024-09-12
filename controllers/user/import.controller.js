@@ -89,6 +89,9 @@ const extractUserData = async ({
     const alreadyExistingUser = await models.userModel.findOne({
       email: result.data.email.trim().toLowerCase(),
       emailVerified: true,
+      department: {
+        $exists: true,
+      }
     });
 
     if (alreadyExistingUser) {
@@ -157,6 +160,9 @@ const saveUploadedUsers = async (req, res, next) => {
         const deletedAlreadyUnverifiedUser = await models.userModel.deleteMany({
           email: row.data.email,
           emailVerified: false,
+          department: {
+            $exists: false,
+          }
         });
         const newUser = await new models.userModel({
           ...row.data,
