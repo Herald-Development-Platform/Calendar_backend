@@ -369,7 +369,7 @@ const deleteEvent = async (req, res, next) => {
 
       const deleted = await models.eventModel.findByIdAndDelete(event._id);
 
-      if (deleted.end < new Date()) {
+      if (deleted.end > new Date()) {
         notificationUsers.map((user) => {
           createNotification({
             user: user._id,
