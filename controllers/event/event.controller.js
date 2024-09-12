@@ -369,22 +369,24 @@ const deleteEvent = async (req, res, next) => {
 
       const deleted = await models.eventModel.findByIdAndDelete(event._id);
 
-      notificationUsers.map((user) => {
-        createNotification({
-          user: user._id,
-          contextId: event._id,
-          context: NOTIFICATION_CONTEXT.EVENT_CANCELLED,
-          message: `Event Deleted: ${event.title}`,
+      if (deleted.end < new Date()) {
+        notificationUsers.map((user) => {
+          createNotification({
+            user: user._id,
+            contextId: event._id,
+            context: NOTIFICATION_CONTEXT.EVENT_CANCELLED,
+            message: `Event Deleted: ${event.title}`,
+          });
+  
+          sendEmail(
+            [user?.email],
+            [],
+            [],
+            "Event Cancelled",
+            getEventDeletedNotificationEmailContent(user?.username, event?.toObject())
+          );
         });
-
-        sendEmail(
-          [user?.email],
-          [],
-          [],
-          "Event Cancelled",
-          getEventDeletedNotificationEmailContent(user?.username, event?.toObject())
-        );
-      });
+      }
 
 
       return res.status(StatusCodes.OK).json({
