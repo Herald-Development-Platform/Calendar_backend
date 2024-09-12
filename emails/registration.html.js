@@ -179,7 +179,7 @@ const getRegistrationHTML = (username, OTP, email) => {
            <p>Hi ${username},</p>
            <p>Welcome to Herald Intra Calendar where you can schedule and view events for your departments.</p>
          </div>
-         <div class="otp" style="align-items: start; display: flex; flex-direction: column; gap: 0px;">
+         <div class="otp">
            <p style="font-size: 18px; margin-bottom: 0px;">Your new account credentials:</p>
            <br>
            <p style="text-align: left; font-size: 16px;">
