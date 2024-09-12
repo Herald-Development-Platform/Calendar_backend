@@ -181,6 +181,7 @@ const getRegistrationHTML = (username, OTP, email) => {
          </div>
          <div class="otp" style="align-items: start; display: flex; flex-direction: column; gap: 0px;">
            <p style="font-size: 18px; margin-bottom: 0px;">Your new account credentials:</p>
+           <br>
            <p style="text-align: left; font-size: 16px;">
              Email: <strong>${email}</strong><br>
              Password: <strong>${password}</strong><br>
