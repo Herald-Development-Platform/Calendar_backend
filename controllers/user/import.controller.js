@@ -91,9 +91,9 @@ const extractUserData = async ({
       department: {
         $exists: true,
       }
-    });
+    }).populate("department");
 
-    if (alreadyExistingUser) {
+    if (alreadyExistingUser && alreadyExistingUser.department) {
       result.reason = "User already exists with that email.";
       result.success = false;
     }
@@ -128,7 +128,7 @@ const saveUploadedUsers = async (req, res, next) => {
     let userDepartment = req.user?.department;
 
     console.log("User Department", userDepartment);
-    
+
     let extracted = await Promise.all(
       data.map((row) =>
         extractUserData({
@@ -158,9 +158,17 @@ const saveUploadedUsers = async (req, res, next) => {
 
         const deletedAlreadyUnverifiedUser = await models.userModel.deleteMany({
           email: row.data.email,
-          department: {
-            $exists: false,
-          }
+          $or: [
+            {
+              department: {
+                $exists: false,
+              }
+            },
+            {
+              department: null,
+            }
+
+          ]
         });
         const newUser = await new models.userModel({
           ...row.data,
