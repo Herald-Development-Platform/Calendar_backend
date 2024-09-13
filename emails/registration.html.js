@@ -186,6 +186,8 @@ const getRegistrationHTML = (username, OTP, email) => {
              Email: <strong>${email}</strong><br>
              Password: <strong>${password}</strong><br>
            </p>
+           <br>
+           <p>Please change this password once you login for security reasons.</p>
          </div>
          <div class="footer">
            <p>Herald College Kathmandu</p>
