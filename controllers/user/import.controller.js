@@ -88,7 +88,6 @@ const extractUserData = async ({
   if (result.success) {
     const alreadyExistingUser = await models.userModel.findOne({
       email: result.data.email.trim().toLowerCase(),
-      emailVerified: true,
       department: {
         $exists: true,
       }
@@ -159,7 +158,6 @@ const saveUploadedUsers = async (req, res, next) => {
 
         const deletedAlreadyUnverifiedUser = await models.userModel.deleteMany({
           email: row.data.email,
-          emailVerified: false,
           department: {
             $exists: false,
           }
@@ -172,7 +170,6 @@ const saveUploadedUsers = async (req, res, next) => {
           permissions: DEFAULT_PERMISSIONS.STAFF_PERMISSIONS,
         }).save();
         const response = await sendEmail(newUser.email, [], [], "Welcome to Herald Intra Calendar", getImportRegistrationHTML(newUser.username, newUser.email, randomPassword));
-        console.log("New USER:::", newUser);
         return {
           email: newUser.email,
           username: newUser.username,
