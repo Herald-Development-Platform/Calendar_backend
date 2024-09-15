@@ -302,7 +302,7 @@ const getEvents = async (req, res, next) => {
         .find({
           ...query,
         })
-        .populate("departments").populate("createdBy")
+        .populate("departments").populate("createdBy", "email username photo _id role")
         .sort({ start: 1 });
     }
 
