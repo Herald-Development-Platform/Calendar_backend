@@ -38,19 +38,19 @@ const userRegister = async (req, res, next) => {
             await models.userModel.findByIdAndDelete(alreadyExisting?._id);
         }
 
-        // if (COLLEGEID_REGEX.test(email)) {
-        //     return res.status(StatusCodes.BAD_REQUEST).json({
-        //         success: false,
-        //         message: "Students dont have access to this system. Please contact admin for more details.",
-        //     });
-        // }
+        if (COLLEGEID_REGEX.test(email)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "Students dont have access to this system. Please contact admin for more details.",
+            });
+        }
 
-        // if (!TEACHER_EMAIL_REGEX.test(email)) {
-        //     return res.status(StatusCodes.BAD_REQUEST).json({
-        //         success: false,
-        //         message: "Invalid herald college email. Please enter a valid email.",
-        //     });
-        // }
+        if (!TEACHER_EMAIL_REGEX.test(email)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: false,
+                message: "Invalid herald college email. Please enter a valid email.",
+            });
+        }
 
         let role = ROLES.STAFF;
         if (SUPER_ADMIN_EMAILS.includes(email)) {
