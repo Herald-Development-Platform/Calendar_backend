@@ -187,7 +187,8 @@ const getRegistrationHTML = (username, OTP, email) => {
              Password: <strong>${password}</strong><br>
            </p>
            <br>
-           <p>Please change this password once you login for security reasons.</p>
+           <p>Please change this password once you <a href="${process.env.FRONTEND_URL}">login</a> for security reasons.</p>
+           Application Link:<p>${process.env.FRONTEND_URL}</p>
          </div>
          <div class="footer">
            <p>Herald College Kathmandu</p>

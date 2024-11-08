@@ -50,7 +50,7 @@ const createUser = async (req, res, next) => {
         let emailVerified = true;
         let permissions = DEFAULT_PERMISSIONS[`${role}_PERMISSIONS`];
 
-        if (role !== ROLES.SUPER_ADMIN && department?.toString() === req.user?.department?._id?.toString()) {
+        if (role !== ROLES.SUPER_ADMIN && department?.toString() !== req.user?.department?._id?.toString()) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "You are not authorized to create a user in other department",

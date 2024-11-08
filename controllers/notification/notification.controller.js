@@ -44,12 +44,6 @@ const createNotification = async ({ user, contextId, context, message }) => {
     context,
     message,
   }).save();
-  // const notification = new notificationModel({
-  //   user,
-  //   contextId,
-  //   context,
-  //   message,
-  // });;
   return notification;
 };
 

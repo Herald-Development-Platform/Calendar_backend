@@ -49,10 +49,20 @@ const sendNewEventCreatedEmail = async (event) => {
       || new Date() >= new Date(user.notificationExpiry);
   });
   departmentUsers = Array.from(new Set(departmentUsers));
+  let eventDepartments = await models.departmentModel.find({
+    _id: { $in: event.departments?.map(d=>d?.toString()?? "-") },
+  });
+  eventDepartments = eventDepartments.map((d) => d.toObject());
+  let createdByUser = await models.userModel.findById(event.createdBy);
+  createdByUser = createdByUser.toObject();
   departmentUsers = departmentUsers.map((user) => {
     const emailContent = getNewEventNotificationEmailContent(
       user.username,
-      event
+      {
+        ...event.toObject(),
+        departments: eventDepartments,
+        createdBy: createdByUser,
+      }
     );
     const notification = createNotification({
       user: user._id,
@@ -91,10 +101,23 @@ const sendEventUpdatedEmail = async (event) => {
       || new Date() >= new Date(user.notificationExpiry);
   });
   departmentUsers = Array.from(new Set(departmentUsers));
+
+  let eventDepartments = await models.departmentModel.find({
+    _id: { $in: event.departments?.map(d=>d?.toString()?? "-") },
+  });
+
+  eventDepartments = eventDepartments.map((d) => d.toObject());
+  let createdByUser = await models.userModel.findById(event.createdBy);
+  createdByUser = createdByUser.toObject();
+
   departmentUsers = departmentUsers.map((user) => {
     const emailContent = getEventUpdatedNotificationEmailContent(
       user.username,
-      event
+      {
+        ...event.toObject(),
+        departments: eventDepartments,
+        createdBy: createdByUser,
+      }
     );
     const notification = createNotification({
       user: user._id,

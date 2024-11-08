@@ -20,12 +20,12 @@ const sendOngoingEventsNotification = async () => {
                 $gte: new Date(),
                 $lte: new Date(Date.now() + (60 * 60 * 1000)),
             },
-        }).populate("involvedUsers");
+        }).populate("involvedUsers").populate("departments").populate("createdBy");
 
         let recurringEvents = await models.eventModel.find({
             recurringType: { $ne: RECURRING_TYPES.NONE },
             recurrenceEnd: { $gte: new Date() + (60 * 60 * 1000) },
-        }).populate("involvedUsers");
+        }).populate("involvedUsers").populate("departments").populate("createdBy");
 
         let recurringEventsWithOccurrences = [];
 
@@ -51,9 +51,9 @@ const sendOngoingEventsNotification = async () => {
             const differenceString = timeDifference(event.start);
             let emailUsers = [];
             emailUsers = emailUsers.concat(event.involvedUsers);
-            emailUsers = emailUsers.concat(await models.userModel.find({ department: { $in: event.departments } }));
+            emailUsers = emailUsers.concat(await models.userModel.find({ department: { $in: event.departments?.map(d=>d._id) } }));
             if (event.createdBy) {
-                emailUsers = emailUsers.concat(await models.userModel.find({ _id: event.createdBy.toString() }));
+                emailUsers = emailUsers.concat(event.createdBy);
             }
             for (let user of emailUsers) {
                 if (user.donotDisturbState !== DONOT_DISTURB_STATE.DEFAULT && user.notificationExpiry && new Date() < new Date(user.notificationExpiry)) {

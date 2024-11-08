@@ -5,7 +5,9 @@ const getNewEventNotificationEmailContent = (username, event) => {
         title: eventName,
         start: eventDate,
         location: eventLocation,
-        description: eventDescription
+        description: eventDescription,
+        departments: eventDepartments,
+        createdBy: eventCreatedBy
     } = event;
 
     const eventTime = new Date(event.start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -91,7 +93,7 @@ const getNewEventNotificationEmailContent = (username, event) => {
                 <div class="content">
                     <h1>New Event Scheduled</h1>
                     <p>Dear ${username},</p>
-                    <p>We are pleased to announce that a new event, <strong>${eventName}</strong>, has been scheduled in your department.</p>
+                    <p>We are pleased to announce that a new event, <strong>${eventName}</strong>, has been scheduled in department ${eventDepartments[0]?.code}.</p>
                     <div class="event-details">
                         <p><strong>Event Details:</strong></p>
                         <p><strong>Title:</strong> ${eventName}</p>
@@ -99,7 +101,9 @@ const getNewEventNotificationEmailContent = (username, event) => {
                         <p><strong>Time:</strong> ${eventTime}</p>
                         <p><strong>Location:</strong> ${eventLocation}</p>
                         <p><strong>Description:</strong> ${eventDescription}</p>
-                    </div>
+                        <p><strong>Created By:</strong> ${eventCreatedBy?.username}</p>
+                        <p><strong>Departments:</strong> ${eventDepartments?.map(d=>d.code).filter(d=>d).join(", ")}</p>
+                        </div>
                     <p>We hope you can join us and make this event a great success.</p>
                     <p>Best regards,<br>Herald College Kathmandu</p>
                 <svg fill=none viewBox="0 0 33 32"width=70 xmlns=http://www.w3.org/2000/svg>
@@ -128,7 +132,9 @@ const getEventUpdatedNotificationEmailContent = (username, event) => {
         title: eventName,
         start: eventDate,
         location: eventLocation,
-        description: eventDescription
+        description: eventDescription,
+        departments: eventDepartments,
+        createdBy: eventCreatedBy
     } = event;
 
     const eventTime = new Date(event.start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -222,6 +228,8 @@ const getEventUpdatedNotificationEmailContent = (username, event) => {
                         <p><strong>Time:</strong> ${eventTime}</p>
                         <p><strong>Location:</strong> ${eventLocation}</p>
                         <p><strong>Description:</strong> ${eventDescription}</p>
+                        <p><strong>Created By:</strong> ${eventCreatedBy?.username}</p>
+                        <p><strong>Departments:</strong> ${eventDepartments?.map(d=>d.code).filter(d=>d).join(", ")}</p>
                     </div>
                     <p>We hope you can join us and make this event a great success.</p>
                     <p>Best regards,<br>Herald College Kathmandu</p>
@@ -251,7 +259,9 @@ const getUpcomingEmailNotificationContent = (username, event) => {
         title: eventName,
         start: eventDate,
         location: eventLocation,
-        description: eventDescription
+        description: eventDescription,
+        departments: eventDepartments,
+        createdBy: eventCreatedBy
     } = event;
 
     const eventTime = new Date(event.start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -345,6 +355,8 @@ const getUpcomingEmailNotificationContent = (username, event) => {
                         <p><strong>Time:</strong> ${eventTime}</p>
                         <p><strong>Location:</strong> ${eventLocation}</p>
                         <p><strong>Description:</strong> ${eventDescription}</p>
+                        <p><strong>Created By:</strong> ${eventCreatedBy?.username}</p>
+                        <p><strong>Departments:</strong> ${eventDepartments?.map(d=>d.code).filter(d=>d).join(", ")}</p>
                     </div>
                     <p>Best regards,<br>Herald College Kathmandu</p>
                 <svg fill=none viewBox="0 0 33 32"width=70 xmlns=http://www.w3.org/2000/svg>
