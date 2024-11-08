@@ -381,7 +381,7 @@ const deleteEvent = async (req, res, next) => {
     if (
       req.user.role === ROLES.SUPER_ADMIN ||
       event?.createdBy?.toString() === req.user?.id?.toString() ||
-      event?.departments[0]?.toString() === req.user.department._id.toString()
+      (event?.departments[0]?.toString() === req.user.department._id.toString() && req.user.role === ROLES.DEPARTMENT_ADMIN)
     ) {
       const notificationUsers = await models.userModel.find({
         $or: [
