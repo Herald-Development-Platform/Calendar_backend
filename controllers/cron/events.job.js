@@ -56,9 +56,6 @@ const sendOngoingEventsNotification = async () => {
                 emailUsers = emailUsers.concat(event.createdBy);
             }
             for (let user of emailUsers) {
-                if (user.donotDisturbState !== DONOT_DISTURB_STATE.DEFAULT && user.notificationExpiry && new Date() < new Date(user.notificationExpiry)) {
-                    continue;
-                }
                 await createNotification({
                     context: NOTIFICATION_CONTEXT.UPCOMING_EVENT,
                     contextId: event._id,
@@ -66,6 +63,9 @@ const sendOngoingEventsNotification = async () => {
                     user: user._id,
                 });
 
+                if (user.donotDisturbState !== DONOT_DISTURB_STATE.DEFAULT && user.notificationExpiry && new Date() < new Date(user.notificationExpiry)) {
+                    continue;
+                }
                 await sendEmail({
                     to: [user.email],
                     cc: [],

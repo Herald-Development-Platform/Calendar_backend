@@ -44,33 +44,41 @@ const sendNewEventCreatedEmail = async (event) => {
   );
   const superAdminUsers = await models.userModel.find({ role: "SUPER_ADMIN" });
   departmentUsers = departmentUsers.concat(superAdminUsers);
-  departmentUsers = departmentUsers.filter((user) => {
-    return user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT
-      || new Date() >= new Date(user.notificationExpiry);
-  });
-  departmentUsers = Array.from(new Set(departmentUsers));
+  // departmentUsers = departmentUsers.filter((user) => {
+  //   return user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT
+  //     || new Date() >= new Date(user.notificationExpiry);
+  // });
+  // departmentUsers = Array.from(new Set(departmentUsers));
   let eventDepartments = await models.departmentModel.find({
-    _id: { $in: event.departments?.map(d=>d?.toString()?? "-") },
+    _id: { $in: event.departments?.map(d => d?.toString() ?? "-") },
   });
   eventDepartments = eventDepartments.map((d) => d.toObject());
   let createdByUser = await models.userModel.findById(event.createdBy);
   createdByUser = createdByUser.toObject();
   departmentUsers = departmentUsers.map((user) => {
-    const emailContent = getNewEventNotificationEmailContent(
-      user.username,
-      {
-        ...event.toObject(),
-        departments: eventDepartments,
-        createdBy: createdByUser,
-      }
-    );
     const notification = createNotification({
       user: user._id,
       contextId: event._id,
       context: NOTIFICATION_CONTEXT.NEW_EVENT,
       message: `New Event Created: ${event.title}`,
     });
-    sendEmail(user.email, [], [], "New Event Created", emailContent);
+    console.log("Notification User: ", user.email);
+    if (user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT
+      || new Date() >= new Date(user.notificationExpiry)) {
+      const emailContent = getNewEventNotificationEmailContent(
+        user.username,
+        {
+          ...event.toObject(),
+          departments: eventDepartments,
+          createdBy: createdByUser,
+        }
+      );
+      try {
+        sendEmail(user.email, [], [], "New Event Created", emailContent);
+      } catch (error) {
+        console.error("ERROR SENDING NEW EVENT EMAIL:", error?.message);
+      }
+    }
   });
 };
 
@@ -96,14 +104,14 @@ const sendEventUpdatedEmail = async (event) => {
   );
   const superAdminUsers = await models.userModel.find({ role: "SUPER_ADMIN" });
   departmentUsers = departmentUsers.concat(superAdminUsers);
-  departmentUsers = departmentUsers.filter((user) => {
-    return user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT
-      || new Date() >= new Date(user.notificationExpiry);
-  });
-  departmentUsers = Array.from(new Set(departmentUsers));
+  // departmentUsers = departmentUsers.filter((user) => {
+  //   return user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT
+  //     || new Date() >= new Date(user.notificationExpiry);
+  // });
+  // departmentUsers = Array.from(new Set(departmentUsers));
 
   let eventDepartments = await models.departmentModel.find({
-    _id: { $in: event.departments?.map(d=>d?.toString()?? "-") },
+    _id: { $in: event.departments?.map(d => d?.toString() ?? "-") },
   });
 
   eventDepartments = eventDepartments.map((d) => d.toObject());
@@ -111,21 +119,26 @@ const sendEventUpdatedEmail = async (event) => {
   createdByUser = createdByUser.toObject();
 
   departmentUsers = departmentUsers.map((user) => {
-    const emailContent = getEventUpdatedNotificationEmailContent(
-      user.username,
-      {
-        ...event.toObject(),
-        departments: eventDepartments,
-        createdBy: createdByUser,
-      }
-    );
     const notification = createNotification({
       user: user._id,
       contextId: event._id,
       context: NOTIFICATION_CONTEXT.EVENT_RESCHEDULED,
       message: `Event Updated: ${event.title}`,
     });
-    sendEmail(user.email, [], [], "Event Updated", emailContent);
+    if (
+      user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT 
+      || new Date() >= new Date(user.notificationExpiry)
+    ) {
+      const emailContent = getEventUpdatedNotificationEmailContent(
+        user.username,
+        {
+          ...event.toObject(),
+          departments: eventDepartments,
+          createdBy: createdByUser,
+        }
+      );
+      sendEmail(user.email, [], [], "Event Updated", emailContent);
+    }
   });
 };
 
@@ -206,8 +219,6 @@ const generateOccurrences = (event) => {
     }
   };
 
-  // console.log("------------------------");
-
   while (currentDate <= recurrenceEnd) {
     currentDate = new Date(currentDate);
     let endDate = new Date(
@@ -220,9 +231,7 @@ const generateOccurrences = (event) => {
       const isException = event.exceptionRanges.some((range) => {
         return new Date(range.start).getTime() <= currentDate.getTime() && new Date(range.end).getTime() >= endDate.getTime();
       });
-      // console.log("exception Ranges: ", event.exceptionRanges);
-      // console.log("currentDate, endDate: ", currentDate, endDate);
-      // console.log("isException: ", isException);
+
       if (isException) {
         incrementDate(currentDate, event.recurringType);
         continue;
@@ -400,7 +409,7 @@ const deleteEvent = async (req, res, next) => {
             context: NOTIFICATION_CONTEXT.EVENT_CANCELLED,
             message: `Event Deleted: ${event.title}`,
           });
-  
+
           sendEmail(
             [user?.email],
             [],

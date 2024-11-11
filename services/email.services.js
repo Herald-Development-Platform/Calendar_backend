@@ -29,10 +29,10 @@ const sendEmail = async (to, cc, bcc, subject, html) => {
         },
         (error, response) => {
           if (error) {
-            console.log("Email could not sent due to error: " + error);
+            console.error("Email could not sent due to error: " + error);
             resolve({ success: false, error: error });
           } else {
-            console.log("Email has been sent successfully");
+            console.log("Email has been sent successfully to " + to);
             resolve({ success: true, response: response });
           }
         },
