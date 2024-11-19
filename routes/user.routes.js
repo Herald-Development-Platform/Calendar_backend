@@ -40,7 +40,7 @@ userRouter.delete(
   deleteUser
 )
 userRouter.get('/profile/all', verifyToken, getAllUsers)
-userRouter.get('/profile/:id', getUserById)
+userRouter.get('/profile/:id', verifyToken, getUserById)
 userRouter.patch('/profile', verifyToken, updateProfile)
 userRouter.get('/profile', verifyToken, getProfile)
 
