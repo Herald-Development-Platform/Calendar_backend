@@ -68,13 +68,13 @@ const sendNewEventCreatedEmail = async (event) => {
       const emailContent = getNewEventNotificationEmailContent(
         user.username,
         {
-          ...event.toObject(),
+          ...(event.toObject()),
           departments: eventDepartments,
           createdBy: createdByUser,
         }
       );
       try {
-        sendEmail(user.email, [], [], "New Event Created", emailContent);
+        sendEmail(user.email, [], [], "New Event Created:"+event?.title ?? "", emailContent);
       } catch (error) {
         console.error("ERROR SENDING NEW EVENT EMAIL:", error?.message);
       }
@@ -137,7 +137,7 @@ const sendEventUpdatedEmail = async (event) => {
           createdBy: createdByUser,
         }
       );
-      sendEmail(user.email, [], [], "Event Updated", emailContent);
+      sendEmail(user.email, [], [], "Event Updated:"+event?.title ?? "", emailContent);
     }
   });
 };
@@ -414,7 +414,7 @@ const deleteEvent = async (req, res, next) => {
             [user?.email],
             [],
             [],
-            "Event Cancelled",
+            "Event Cancelled:"+event?.title ?? "",
             getEventDeletedNotificationEmailContent(user?.username, event?.toObject())
           );
         });
