@@ -11,31 +11,24 @@ const { connectToMongoDB } = require("./services/database.services");
 // Initialize Express app
 const app = express();
 
+const ALLOWED_IPS = [
+  "localhost",
+  "127.0.0.1",
+  "10.99.0.35",
+  "110.34.30.60"
+]
+
 // Middleware
 app.use(express.json());
 const corsOptions = {
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5000",
-    "http://localhost:5050",
-    "http://localhost:5174",
-    "http://localhost:5413",
-    "http://localhost:9787",
-    "http://localhost:8080",
-    "http://localhost:5000",
-    "http://localhost:7575",
-    "https://calendar-frontend-suen.onrender.com",
-    "https://calendar-frontend-tmhj.onrender.com",
-    "http://10.99.0.35:7575",
-    "http://10.99.0.35:10000",
-    "http://10.99.0.35:7575",
-    "http://10.99.0.35:5000",
-    "http://10.99.0.35:10000",
-    "http://10.99.0.35:7000",
-    "http://10.99.0.35:7001",
-  ],
+  origin: (origin, callback) => {
+    origin = origin.split("//")[1];
+    if (ALLOWED_IPS.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+},
   credentials: true,
 };
 
