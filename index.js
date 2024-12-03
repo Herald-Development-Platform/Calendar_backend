@@ -23,12 +23,12 @@ app.use(express.json());
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) {
-      callback(null, true);
+      return callback(null, true);
     }
-    if (origin.includes("//")) {
+    if (origin?.includes("//")) {
       origin = origin?.split("//")[1];
     }
-    if (origin.includes(":")) {
+    if (origin?.includes(":")) {
       origin = origin?.split(":")[0];
     }
     if (ALLOWED_IPS.indexOf(origin) !== -1 || !origin) {
