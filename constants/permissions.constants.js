@@ -50,3 +50,35 @@ module.exports = {
   PERMISSIONS,
   DEFAULT_PERMISSIONS
 }
+
+/*
+db.users.updateMany(
+  {role: "SUPER_ADMIN"},
+  {
+    $set: {
+      permissions:[
+        'CREATE_USER',
+        'UPDATE_USER',
+        'DELETE_USER',
+        'CREATE_DEPARTMENT',
+        'UPDATE_DEPARTMENT',
+        'DELETE_DEPARTMENT',
+        'MANAGE_DEPARTMENT_REQUEST',
+        'VIEW_EVENTS_FOR_ALL_DEPARTMENT',
+        'CREATE_SEMESTER',
+        'UPDATE_SEMESTER',
+        'DELETE_SEMESTER',
+        'CREATE_LOCATION',
+        'DELETE_LOCATION',
+        'MUTATE_REQUISITION',
+        'VIEW_ALL_REQUISITION',
+        'VIEW_MY_REQUISITION',
+        'VIEW_DEPARTMENT_REQUISITION',
+        'VERIFY_REJECT_LEVEL_1',
+        'VERIFY_REJECT_LEVEL_2',
+        'GENERATE_CERTIFICATE',
+      ]
+    }
+  }
+)
+*/
