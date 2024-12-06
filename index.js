@@ -15,7 +15,8 @@ const ALLOWED_IPS = [
   "localhost",
   "127.0.0.1",
   "10.99.0.35",
-  "110.34.30.60"
+  "110.34.30.60",
+  "events.heraldcollege.edu.np",
 ]
 
 // Middleware
