@@ -18,14 +18,15 @@ const ALLOWED_IPS = [
   "110.34.30.60",
   "events.heraldcollege.edu.np", 
   "certificate.heraldcollege.edu.np", 
+  ""
 ]
 
 // Middleware
 app.use(express.json());
 const corsOptions = {
   origin: (origin, callback) => {
+    return callback(null, true);
     if (!origin) {
-      return callback(null, true);
     }
     if (origin?.includes("//")) {
       origin = origin?.split("//")[1];
