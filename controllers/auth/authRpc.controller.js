@@ -1,8 +1,13 @@
-const { StatusCodes } = require("http-status-codes");
+const ACCESS_SECRET = process.env.JWT_SECRET;
+const jwt = require('jsonwebtoken');
+const UserModel = require('../../models/user.model');
+const { StatusCodes } = require('http-status-codes');
+
 
 const authenticateUserToken = async (req, res, next) => {
 
     let token = req.body.token;
+    console.log("Token: ", token);
     if (!token) {
         return res.status(StatusCodes.FORBIDDEN).json({
             success: false,
