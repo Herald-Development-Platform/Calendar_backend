@@ -8,6 +8,7 @@ const userRouter = require("./user.routes");
 const notificationRouter = require("./notification.routes");
 const commonRouter = require("./common.routes");
 const semesterRouter = require("./semester.routes");
+const rpcRouter = require("./rpc.routes");
 
 router.use(authRouter);
 router.use(eventRouter);
@@ -16,6 +17,7 @@ router.use(departmentRouter);
 router.use(notificationRouter);
 router.use(commonRouter);
 router.use(semesterRouter);
+router.use("/rpc", rpcRouter);
 
 const {
   uploadImage,
