@@ -1,12 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 
 const authenticateUserToken = async (req, res, next) => {
-    if (req.headers.rpcSecret !== process.env.RPC_SECRET) {
-        return res.status(401).json({
-            success: false,
-            message: "Unauthorized access",
-        });
-    }
 
     let token = req.body.token;
     if (!token) {

@@ -3,7 +3,7 @@ const { authenticateUserToken } = require('../controllers/auth/authRpc.controlle
 const rpcRouter = require('express').Router();
 
 rpcRouter.use((req, res, next) => {
-    if (req.headers.rpcSecret !== process.env.RPC_SECRET) {
+    if (req.headers.rpc_secret !== process.env.RPC_SECRET) {
         return res.status(401).json({
             success: false,
             message: "Unauthorized access",
