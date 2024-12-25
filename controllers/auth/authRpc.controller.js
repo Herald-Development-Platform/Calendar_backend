@@ -7,7 +7,6 @@ const { StatusCodes } = require('http-status-codes');
 const authenticateUserToken = async (req, res, next) => {
 
     let token = req.body.token;
-    console.log("Token: ", token);
     if (!token) {
         return res.status(StatusCodes.FORBIDDEN).json({
             success: false,
