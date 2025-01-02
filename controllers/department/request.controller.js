@@ -94,7 +94,7 @@ const createDepartmentRequest = async (req, res, next) => {
         requestorEmail: req.user.email,
         departmentName: `${departmentData.code} - ${departmentData.name}`,
         requestorReason: notes,
-        approveLink: `${process.env.FRONTEND_URL}/department`,
+        approveLink: `${process.env.FRONTEND_URL}/members`,
       })
     );
 
