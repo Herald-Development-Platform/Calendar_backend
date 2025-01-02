@@ -31,9 +31,10 @@ const getGoogleEvents = (req, res, next) => {
 const syncGoogleEvents = async (req, res, next) => {
 
     try {
-        return res.status(200).json({
+        return res.status(StatusCodes.FORBIDDEN).json({
             success: true,
             message: 'Syncing feature is being tested. Will be out ASAP.',
+            data: {},
         });
         const calendar = google.calendar({ version: 'v3', auth: req.googleAuthClient });
         let localsyncedEvents = await models.syncedEventModel.find({ user: req.user.id }).populate('event');
