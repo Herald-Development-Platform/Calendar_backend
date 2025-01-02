@@ -63,11 +63,13 @@ const handleGoogleCallback = async (req, res, next) => {
         );
 
         const data = userInfo.data;
-        if (COLLEGEID_REGEX.test(data.email)) {
-            return res.redirect(`${process.env.FRONTEND_URL}/oauth?error=Students dont have access to this system. Please contact admin for more details.`);
-        }
-        if (!TEACHER_EMAIL_REGEX.test(data.email)) {
-            return res.redirect(`${process.env.FRONTEND_URL}/oauth?error=Invalid herald college email. Please enter a valid email.`);
+        if (!process.env.ALLOW_INVALID_EMAILS) {
+            if (COLLEGEID_REGEX.test(data.email)) {
+                return res.redirect(`${process.env.FRONTEND_URL}/oauth?error=Students dont have access to this system. Please contact admin for more details.`);
+            }
+            if (!TEACHER_EMAIL_REGEX.test(data.email)) {
+                return res.redirect(`${process.env.FRONTEND_URL}/oauth?error=Invalid herald college email. Please enter a valid email.`);
+            }
         }
         let email = data.email;
 

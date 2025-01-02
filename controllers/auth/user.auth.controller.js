@@ -37,19 +37,20 @@ const userRegister = async (req, res, next) => {
         } else {
             await models.userModel.findByIdAndDelete(alreadyExisting?._id);
         }
-
-        if (COLLEGEID_REGEX.test(email)) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                success: false,
-                message: "Students dont have access to this system. Please contact admin for more details.",
-            });
-        }
-
-        if (!TEACHER_EMAIL_REGEX.test(email)) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                success: false,
-                message: "Invalid herald college email. Please enter a valid email.",
-            });
+        if (!process.env.ALLOW_INVALID_EMAILS) {
+            if (COLLEGEID_REGEX.test(email)) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: "Students dont have access to this system. Please contact admin for more details.",
+                });
+            }
+    
+            if (!TEACHER_EMAIL_REGEX.test(email)) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: "Invalid herald college email. Please enter a valid email.",
+                });
+            }
         }
 
         let role = ROLES.STAFF;
