@@ -20,7 +20,7 @@ const sendEmail = async (to, cc, bcc, subject, html) => {
     return await new Promise((resolve, reject) => {
       transport.sendMail(
         {
-          from: NODE_MAILER_EMAIL,
+          from:`"Herald Events" <${NODE_MAILER_EMAIL}>` ,
           to,
           cc,
           bcc,

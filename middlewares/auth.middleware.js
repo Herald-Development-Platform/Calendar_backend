@@ -22,7 +22,7 @@ const verifyToken = async (req, res, next) => {
         const { id: userID } = jwt.verify(token, ACCESS_SECRET);
         id = userID?.trim();
     } catch (e) {
-        return res.status(StatusCodes.FORBIDDEN).json({ error: "Invalid Token!" });
+        return res.status(StatusCodes.FORBIDDEN).json({ success: false, message: "Invalid Token!" });
     }
     if (!id) {
         return res.status(401).json({
@@ -85,7 +85,7 @@ const isGoogleAuthorized = async (req, res, next) => {
 
     const { googleTokens } = req.user;
 
-    if (!googleTokens || !googleTokens.iv || !googleTokens.tokenHash){
+    if (!googleTokens || !googleTokens.iv || !googleTokens.tokenHash) {
         return res.status(StatusCodes.FORBIDDEN).json({
             success: false,
             message: 'User needs to be authorized with google.',

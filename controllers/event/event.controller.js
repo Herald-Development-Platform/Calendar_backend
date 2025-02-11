@@ -20,7 +20,6 @@ const {
   createNotification,
 } = require("../notification/notification.controller");
 const { sendEmail } = require("../../services/email.services");
-const { sendNotification } = require("../websocket/socket.controller");
 
 const sendNewEventCreatedEmail = async (event) => {
   let departmentUsers = [];
