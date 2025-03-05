@@ -84,6 +84,16 @@ const getNewEventNotificationEmailContent = (username, event) => {
                 text-decoration: none;
                 border-radius: 5px;
             }
+            .gotolink {
+                display: inline-block;
+                padding: 10px 20px;
+                margin-top: 20px;
+                font-size: 16px;
+                color: #ffffff;
+                background-color: #007bff;
+                text-decoration: none;
+                border-radius: 5px;
+            }
         </style>
         </head>
         <body>
@@ -94,6 +104,7 @@ const getNewEventNotificationEmailContent = (username, event) => {
                     <h1>New Event Scheduled</h1>
                     <p>Dear ${username},</p>
                     <p>We are pleased to announce that a new event, <strong>${eventName}</strong>, has been scheduled in department ${eventDepartments[0]?.code}.</p>
+                    <a class="gotolink" href="${process.env.FRONTEND_URL}?id=${event._id}">Go to event ↗</a>
                     <div class="event-details">
                         <p><strong>Event Details:</strong></p>
                         <p><strong>Title:</strong> ${eventName}</p>
@@ -102,7 +113,7 @@ const getNewEventNotificationEmailContent = (username, event) => {
                         <p><strong>Location:</strong> ${eventLocation}</p>
                         <p><strong>Description:</strong> ${eventDescription}</p>
                         <p><strong>Created By:</strong> ${eventCreatedBy?.username}</p>
-                        <p><strong>Departments:</strong> ${eventDepartments?.map(d=>d.code).filter(d=>d).join(", ")}</p>
+                        <p><strong>Departments:</strong> ${eventDepartments?.map(d => d.code).filter(d => d).join(", ")}</p>
                         </div>
                     <p>We hope you can join us and make this event a great success.</p>
                     <p>Best regards,<br>Herald College Kathmandu</p>
@@ -211,6 +222,16 @@ const getEventUpdatedNotificationEmailContent = (username, event) => {
                 text-decoration: none;
                 border-radius: 5px;
             }
+            .gotolink {
+                display: inline-block;
+                padding: 10px 20px;
+                margin-top: 20px;
+                font-size: 16px;
+                color: #ffffff;
+                background-color: #007bff;
+                text-decoration: none;
+                border-radius: 5px;
+            }
         </style>
         </head>
         <body>
@@ -221,6 +242,9 @@ const getEventUpdatedNotificationEmailContent = (username, event) => {
                     <h1>Event Updated</h1>
                     <p>Dear ${username},</p>
                     <p>It is to notify that the event ${eventName} is updated!</p>
+                    
+                    <a class="gotolink" href="${process.env.FRONTEND_URL}?id=${event._id}">Go to event ↗</a>
+
                     <div class="event-details">
                         <p><strong>Updated Event Details:</strong></p>
                         <p><strong>Title:</strong> ${eventName}</p>
@@ -229,7 +253,7 @@ const getEventUpdatedNotificationEmailContent = (username, event) => {
                         <p><strong>Location:</strong> ${eventLocation}</p>
                         <p><strong>Description:</strong> ${eventDescription}</p>
                         <p><strong>Created By:</strong> ${eventCreatedBy?.username}</p>
-                        <p><strong>Departments:</strong> ${eventDepartments?.map(d=>d.code).filter(d=>d).join(", ")}</p>
+                        <p><strong>Departments:</strong> ${eventDepartments?.map(d => d.code).filter(d => d).join(", ")}</p>
                     </div>
                     <p>We hope you can join us and make this event a great success.</p>
                     <p>Best regards,<br>Herald College Kathmandu</p>
@@ -340,6 +364,16 @@ const getUpcomingEmailNotificationContent = (username, event) => {
                 text-decoration: none;
                 border-radius: 5px;
             }
+            .gotolink {
+                display: inline-block;
+                padding: 10px 20px;
+                margin-top: 20px;
+                font-size: 16px;
+                color: #ffffff;
+                background-color: #007bff;
+                text-decoration: none;
+                border-radius: 5px;
+            }
         </style>
         </head>
         <body>
@@ -348,6 +382,9 @@ const getUpcomingEmailNotificationContent = (username, event) => {
                     <h1>Upcoming Event</h1>
                     <p>Dear ${username},</p>
                     <p>It is to notify that <strong>${eventName}</strong>, is happening ${remaningTime}</p>
+                    
+                    <a class="gotolink" href="${process.env.FRONTEND_URL}?id=${event._id}">Go to event ↗</a>
+
                     <div class="event-details">
                         <p><strong>Event Details:</strong></p>
                         <p><strong>Title:</strong> ${eventName}</p>
@@ -356,7 +393,7 @@ const getUpcomingEmailNotificationContent = (username, event) => {
                         <p><strong>Location:</strong> ${eventLocation}</p>
                         <p><strong>Description:</strong> ${eventDescription}</p>
                         <p><strong>Created By:</strong> ${eventCreatedBy?.username}</p>
-                        <p><strong>Departments:</strong> ${eventDepartments?.map(d=>d.code).filter(d=>d).join(", ")}</p>
+                        <p><strong>Departments:</strong> ${eventDepartments?.map(d => d.code).filter(d => d).join(", ")}</p>
                     </div>
                     <p>Best regards,<br>Herald College Kathmandu</p>
                 <svg fill=none viewBox="0 0 33 32"width=70 xmlns=http://www.w3.org/2000/svg>
