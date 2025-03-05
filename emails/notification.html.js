@@ -80,7 +80,7 @@ const getNewEventNotificationEmailContent = (username, event) => {
                 margin-top: 20px;
                 font-size: 16px;
                 color: #ffffff;
-                background-color: #007bff;
+                background-color: #75bf43;
                 text-decoration: none;
                 border-radius: 5px;
             }
@@ -90,7 +90,7 @@ const getNewEventNotificationEmailContent = (username, event) => {
                 margin-top: 20px;
                 font-size: 16px;
                 color: #ffffff;
-                background-color: #007bff;
+                background-color: #75bf43;
                 text-decoration: none;
                 border-radius: 5px;
             }
@@ -104,7 +104,7 @@ const getNewEventNotificationEmailContent = (username, event) => {
                     <h1>New Event Scheduled</h1>
                     <p>Dear ${username},</p>
                     <p>We are pleased to announce that a new event, <strong>${eventName}</strong>, has been scheduled in department ${eventDepartments[0]?.code}.</p>
-                    <a class="gotolink" href="${process.env.FRONTEND_URL}?id=${event._id}">Go to event ↗</a>
+                    <a class="gotolink" style="color:white;" href="${process.env.FRONTEND_URL}?id=${event._id}">Go to event ↗</a>
                     <div class="event-details">
                         <p><strong>Event Details:</strong></p>
                         <p><strong>Title:</strong> ${eventName}</p>
@@ -218,7 +218,7 @@ const getEventUpdatedNotificationEmailContent = (username, event) => {
                 margin-top: 20px;
                 font-size: 16px;
                 color: #ffffff;
-                background-color: #007bff;
+                background-color: #75bf43;
                 text-decoration: none;
                 border-radius: 5px;
             }
@@ -228,7 +228,7 @@ const getEventUpdatedNotificationEmailContent = (username, event) => {
                 margin-top: 20px;
                 font-size: 16px;
                 color: #ffffff;
-                background-color: #007bff;
+                background-color: #75bf43;
                 text-decoration: none;
                 border-radius: 5px;
             }
@@ -243,7 +243,7 @@ const getEventUpdatedNotificationEmailContent = (username, event) => {
                     <p>Dear ${username},</p>
                     <p>It is to notify that the event ${eventName} is updated!</p>
                     
-                    <a class="gotolink" href="${process.env.FRONTEND_URL}?id=${event._id}">Go to event ↗</a>
+                    <a class="gotolink" style="color:white;" href="${process.env.FRONTEND_URL}?id=${event._id}">Go to event ↗</a>
 
                     <div class="event-details">
                         <p><strong>Updated Event Details:</strong></p>
@@ -360,7 +360,7 @@ const getUpcomingEmailNotificationContent = (username, event) => {
                 margin-top: 20px;
                 font-size: 16px;
                 color: #ffffff;
-                background-color: #007bff;
+                background-color: #75bf43;
                 text-decoration: none;
                 border-radius: 5px;
             }
@@ -370,7 +370,7 @@ const getUpcomingEmailNotificationContent = (username, event) => {
                 margin-top: 20px;
                 font-size: 16px;
                 color: #ffffff;
-                background-color: #007bff;
+                background-color: #75bf43;
                 text-decoration: none;
                 border-radius: 5px;
             }
@@ -383,7 +383,7 @@ const getUpcomingEmailNotificationContent = (username, event) => {
                     <p>Dear ${username},</p>
                     <p>It is to notify that <strong>${eventName}</strong>, is happening ${remaningTime}</p>
                     
-                    <a class="gotolink" href="${process.env.FRONTEND_URL}?id=${event._id}">Go to event ↗</a>
+                    <a class="gotolink" style="color:white;" href="${process.env.FRONTEND_URL}?id=${event._id}">Go to event ↗</a>
 
                     <div class="event-details">
                         <p><strong>Event Details:</strong></p>
