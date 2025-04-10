@@ -104,7 +104,7 @@ const userLogin = async (req, res, next) => {
             });
         }
         user = user[0];
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        const passwordMatch = await bcrypt.compare(password || "", user.password|| "");
         if (!passwordMatch) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 success: false,
