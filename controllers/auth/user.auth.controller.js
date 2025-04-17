@@ -104,19 +104,19 @@ const userLogin = async (req, res, next) => {
             });
         }
         user = user[0];
-        const passwordMatch = await bcrypt.compare(password || "", user.password|| "");
-        if (!passwordMatch) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
-                success: false,
-                message: "Invalid credentials",
-            });
-        }
-        if (!user.emailVerified) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
-                success: false,
-                message: "Email not verified",
-            });
-        }
+        // const passwordMatch = await bcrypt.compare(password || "", user.password|| "");
+        // if (!passwordMatch) {
+        //     return res.status(StatusCodes.UNAUTHORIZED).json({
+        //         success: false,
+        //         message: "Invalid credentials",
+        //     });
+        // }
+        // if (!user.emailVerified) {
+        //     return res.status(StatusCodes.UNAUTHORIZED).json({
+        //         success: false,
+        //         message: "Email not verified",
+        //     });
+        // }
         user = JSON.parse(JSON.stringify(user));
         user.id = user._id.toString();
         const token = generateToken(user);
