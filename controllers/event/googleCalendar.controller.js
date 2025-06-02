@@ -185,7 +185,10 @@ const syncGoogleEvents = async (req, res, next) => {
     // Step 2: Unsynced local events
     let localUnSyncedEvents = await models.eventModel.find({
       _id: { $nin: localSyncedEventIds },
-      createdBy: req.user.id,
+      $or: [
+        { createdBy: req.user.id },
+        { departments: { $in: [req.user.department.id] } },
+      ],
     });
 
     localUnSyncedEvents = localUnSyncedEvents.filter((event) => {
@@ -304,7 +307,7 @@ const syncGoogleEvents = async (req, res, next) => {
             start: startDate,
             end: endDate,
             location: event.location ?? "--",
-            departments: req.user.department ? [req.user.department] : [],
+            departments: [],
             involvedUsers: [req.user.id],
             createdBy: req.user.id,
             color: event.colorId ?? "#49449C",

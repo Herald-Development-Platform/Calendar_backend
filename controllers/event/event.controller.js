@@ -602,7 +602,7 @@ const updateEvent = async (req, res, next) => {
 
       const updated = await models.eventModel.findByIdAndUpdate(
         event._id,
-        req.body,
+        { ...req.body, personal: false },
         {
           new: true,
         }
