@@ -120,7 +120,7 @@ const userLogin = async (req, res, next) => {
         user = JSON.parse(JSON.stringify(user));
         user.id = user._id.toString();
         const token = generateToken(user);
-        res.cookie('token', token, { domain: process.env.FRONTEND_URL });
+        // res.cookie('token', token, { domain: process.env.FRONTEND_URL });
         return res.status(StatusCodes.OK).json({
             success: true,
             message: "user logged in successfully",

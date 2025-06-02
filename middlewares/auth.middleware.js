@@ -73,10 +73,13 @@ const checkTeacher = (req, res, next) => {
     return next();
 };
 
-const isGoogleAuthorized = async (req, res, next) => {
+const isGoogleAuthorized = (optional=true)=>async (req, res, next) => {
     const userAgain = await UserModel.findById(req.user.id);
     req.user.googleTokens = userAgain.googleTokens;
     if (!req.user?.googleTokens) {
+        if (optional) {
+            return next();
+        }
         return res.status(StatusCodes.FORBIDDEN).json({
             success: false,
             message: 'User needs to be authorized with google.',
@@ -86,6 +89,9 @@ const isGoogleAuthorized = async (req, res, next) => {
     const { googleTokens } = req.user;
 
     if (!googleTokens || !googleTokens.iv || !googleTokens.tokenHash) {
+        if (optional) {
+            return next();
+        }
         return res.status(StatusCodes.FORBIDDEN).json({
             success: false,
             message: 'User needs to be authorized with google.',
