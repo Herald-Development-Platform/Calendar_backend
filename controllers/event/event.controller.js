@@ -20,6 +20,7 @@ const {
   createNotification,
 } = require("../notification/notification.controller");
 const { sendEmail } = require("../../services/email.services");
+const { google } = require("googleapis");
 
 const sendNewEventCreatedEmail = async (event) => {
   let departmentUsers = [];
@@ -49,7 +50,7 @@ const sendNewEventCreatedEmail = async (event) => {
   // });
   // departmentUsers = Array.from(new Set(departmentUsers));
   let eventDepartments = await models.departmentModel.find({
-    _id: { $in: event.departments?.map(d => d?.toString() ?? "-") },
+    _id: { $in: event.departments?.map((d) => d?.toString() ?? "-") },
   });
   eventDepartments = eventDepartments.map((d) => d.toObject());
   let createdByUser = await models.userModel.findById(event.createdBy);
@@ -62,18 +63,23 @@ const sendNewEventCreatedEmail = async (event) => {
       message: `New Event Created: ${event.title}`,
     });
     console.log("Notification User: ", user.email);
-    if (user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT
-      || new Date() >= new Date(user.notificationExpiry)) {
-      const emailContent = getNewEventNotificationEmailContent(
-        user.username,
-        {
-          ...(event.toObject()),
-          departments: eventDepartments,
-          createdBy: createdByUser,
-        }
-      );
+    if (
+      user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT ||
+      new Date() >= new Date(user.notificationExpiry)
+    ) {
+      const emailContent = getNewEventNotificationEmailContent(user.username, {
+        ...event.toObject(),
+        departments: eventDepartments,
+        createdBy: createdByUser,
+      });
       try {
-        sendEmail(user.email, [], [], "New Event Created:"+event?.title ?? "", emailContent);
+        sendEmail(
+          user.email,
+          [],
+          [],
+          "New Event Created:" + event?.title ?? "",
+          emailContent
+        );
       } catch (error) {
         console.error("ERROR SENDING NEW EVENT EMAIL:", error?.message);
       }
@@ -110,7 +116,7 @@ const sendEventUpdatedEmail = async (event) => {
   // departmentUsers = Array.from(new Set(departmentUsers));
 
   let eventDepartments = await models.departmentModel.find({
-    _id: { $in: event.departments?.map(d => d?.toString() ?? "-") },
+    _id: { $in: event.departments?.map((d) => d?.toString() ?? "-") },
   });
 
   eventDepartments = eventDepartments.map((d) => d.toObject());
@@ -125,8 +131,8 @@ const sendEventUpdatedEmail = async (event) => {
       message: `Event Updated: ${event.title}`,
     });
     if (
-      user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT 
-      || new Date() >= new Date(user.notificationExpiry)
+      user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT ||
+      new Date() >= new Date(user.notificationExpiry)
     ) {
       const emailContent = getEventUpdatedNotificationEmailContent(
         user.username,
@@ -136,7 +142,13 @@ const sendEventUpdatedEmail = async (event) => {
           createdBy: createdByUser,
         }
       );
-      sendEmail(user.email, [], [], "Event Updated:"+event?.title ?? "", emailContent);
+      sendEmail(
+        user.email,
+        [],
+        [],
+        "Event Updated:" + event?.title ?? "",
+        emailContent
+      );
     }
   });
 };
@@ -221,14 +233,15 @@ const generateOccurrences = (event) => {
   while (currentDate <= recurrenceEnd) {
     currentDate = new Date(currentDate);
     let endDate = new Date(
-      currentDate.getTime() + (new Date(event.end).getTime() - new Date(event.start).getTime())
+      currentDate.getTime() +
+        (new Date(event.end).getTime() - new Date(event.start).getTime())
     );
-    if (
-      event.exceptionRanges &&
-      event.exceptionRanges.length > 0
-    ) {
+    if (event.exceptionRanges && event.exceptionRanges.length > 0) {
       const isException = event.exceptionRanges.some((range) => {
-        return new Date(range.start).getTime() <= currentDate.getTime() && new Date(range.end).getTime() >= endDate.getTime();
+        return (
+          new Date(range.start).getTime() <= currentDate.getTime() &&
+          new Date(range.end).getTime() >= endDate.getTime()
+        );
       });
 
       if (isException) {
@@ -236,7 +249,9 @@ const generateOccurrences = (event) => {
         continue;
       }
     }
-    let nonDuplicateId = `${event._id}-${crypto.randomBytes(4).toString("hex")}`;
+    let nonDuplicateId = `${event._id}-${crypto
+      .randomBytes(4)
+      .toString("hex")}`;
     let occurrence = {
       ...event,
       start: new Date(currentDate.toISOString()),
@@ -295,8 +310,16 @@ const getEvents = async (req, res, next) => {
         .find({
           ...query,
         })
-        .populate("departments").populate("createdBy", "email username photo _id role")
+        .populate("departments")
+        .populate("createdBy", "email username photo _id role")
         .sort({ start: 1 });
+
+      events = events.filter((event) => {
+        if (!event.personal) {
+          return true;
+        }
+        return event.createdBy._id.toString() === req.user._id.toString();
+      });
     } else {
       query = {
         $and: [{ departments: req.user.department }],
@@ -333,8 +356,16 @@ const getEvents = async (req, res, next) => {
         .find({
           ...query,
         })
-        .populate("departments").populate("createdBy", "email username photo _id role")
+        .populate("departments")
+        .populate("createdBy", "email username photo _id role")
         .sort({ start: 1 });
+
+      events = events.filter((event) => {
+        if (!event.personal) {
+          return true;
+        }
+        return event.createdBy._id.toString() === req.user._id.toString();
+      });
     }
 
     let allEvents = [];
@@ -353,10 +384,15 @@ const getEvents = async (req, res, next) => {
             description: "Imported from google calendar",
             admins: [],
           },
-          ...(event.departments),
-        ]
+          ...event.departments,
+        ];
       }
-      if (event.recurringType !== RECURRING_TYPES.NONE && new Date(event.recurrenceEnd).toString() !== "Invalid Date" && Object.values(RECURRING_TYPES).includes(event.recurringType)) {
+
+      if (
+        event.recurringType !== RECURRING_TYPES.NONE &&
+        new Date(event.recurrenceEnd).toString() !== "Invalid Date" &&
+        Object.values(RECURRING_TYPES).includes(event.recurringType)
+      ) {
         const occurrences = generateOccurrences(event);
         allEvents = allEvents.concat(occurrences);
       } else {
@@ -375,9 +411,70 @@ const getEvents = async (req, res, next) => {
   }
 };
 
+// const deleteEvent = async (req, res, next) => {
+//   try {
+//     const event = await models.eventModel.findOne({ _id: req.params.id.split("-")[0] });
+
+//     if (!event) {
+//       return res.status(StatusCodes.NOT_FOUND).json({
+//         success: false,
+//         message: "Event not found",
+//       });
+//     }
+
+//     if (
+//       req.user.role === ROLES.SUPER_ADMIN ||
+//       event?.createdBy?.toString() === req.user?.id?.toString() ||
+//       (event?.departments[0]?.toString() === req.user.department._id.toString() && req.user.role === ROLES.DEPARTMENT_ADMIN)
+//     ) {
+//       const notificationUsers = await models.userModel.find({
+//         $or: [
+//           { department: { $in: event.departments } },
+//           { _id: { $in: event.involvedUsers } },
+//         ],
+//       });
+
+//       const deleted = await models.eventModel.findByIdAndDelete(event._id);
+
+//       if (deleted.end > new Date()) {
+//         notificationUsers.map((user) => {
+//           createNotification({
+//             user: user._id,
+//             contextId: event._id,
+//             context: NOTIFICATION_CONTEXT.EVENT_CANCELLED,
+//             message: `Event Deleted: ${event.title}`,
+//           });
+
+//           sendEmail(
+//             [user?.email],
+//             [],
+//             [],
+//             "Event Cancelled:"+event?.title ?? "",
+//             getEventDeletedNotificationEmailContent(user?.username, event?.toObject())
+//           );
+//         });
+//       }
+
+//       return res.status(StatusCodes.OK).json({
+//         success: true,
+//         message: "Event deleted successfully",
+//         data: deleted,
+//       });
+//     } else {
+//       return res.status(StatusCodes.UNAUTHORIZED).json({
+//         success: false,
+//         message: "You are not authorized to delete this event",
+//       });
+//     }
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 const deleteEvent = async (req, res, next) => {
   try {
-    const event = await models.eventModel.findOne({ _id: req.params.id.split("-")[0] });
+    const eventId = req.params.id.split("-")[0];
+    const event = await models.eventModel.findOne({ _id: eventId });
 
     if (!event) {
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -386,11 +483,56 @@ const deleteEvent = async (req, res, next) => {
       });
     }
 
-    if (
+    const userIsAllowed =
       req.user.role === ROLES.SUPER_ADMIN ||
-      event?.createdBy?.toString() === req.user?.id?.toString() ||
-      (event?.departments[0]?.toString() === req.user.department._id.toString() && req.user.role === ROLES.DEPARTMENT_ADMIN)
-    ) {
+      event.createdBy?.toString() === req.user?.id?.toString() ||
+      (event.departments[0]?.toString() ===
+        req.user.department?._id?.toString() &&
+        req.user.role === ROLES.DEPARTMENT_ADMIN);
+
+    if (!userIsAllowed) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: "You are not authorized to delete this event",
+      });
+    }
+
+    // 🗑️ Try to delete from Google Calendar if synced
+    try {
+      const synced = await models.syncedEventModel.findOne({
+        user: req.user.id,
+        event: event._id,
+      });
+
+      console.log("Synced Event:", synced);
+      console.log("Event Data:", event);
+      console.log("Google Auth Client:", req.googleAuthClient);
+      if (synced) {
+        const calendar = google.calendar({
+          version: "v3",
+          auth: req.googleAuthClient,
+        });
+
+        await calendar.events.delete({
+          calendarId: "primary",
+          eventId: synced.googleEventId,
+        });
+
+        console.log("Deleted from Google Calendar:", synced.googleEventId);
+
+        await models.syncedEventModel.findByIdAndDelete(synced._id);
+      }
+    } catch (googleDeleteErr) {
+      console.error(
+        "Failed to delete from Google Calendar:",
+        googleDeleteErr.message
+      );
+    }
+
+    // 🗑️ Delete local event
+    const deleted = await models.eventModel.findByIdAndDelete(event._id);
+
+    if (deleted.end > new Date()) {
       const notificationUsers = await models.userModel.find({
         $or: [
           { department: { $in: event.departments } },
@@ -398,39 +540,32 @@ const deleteEvent = async (req, res, next) => {
         ],
       });
 
-      const deleted = await models.eventModel.findByIdAndDelete(event._id);
-
-      if (deleted.end > new Date()) {
-        notificationUsers.map((user) => {
-          createNotification({
-            user: user._id,
-            contextId: event._id,
-            context: NOTIFICATION_CONTEXT.EVENT_CANCELLED,
-            message: `Event Deleted: ${event.title}`,
-          });
-
-          sendEmail(
-            [user?.email],
-            [],
-            [],
-            "Event Cancelled:"+event?.title ?? "",
-            getEventDeletedNotificationEmailContent(user?.username, event?.toObject())
-          );
+      notificationUsers.forEach((user) => {
+        createNotification({
+          user: user._id,
+          contextId: event._id,
+          context: NOTIFICATION_CONTEXT.EVENT_CANCELLED,
+          message: `Event Deleted: ${event.title}`,
         });
-      }
 
-
-      return res.status(StatusCodes.OK).json({
-        success: true,
-        message: "Event deleted successfully",
-        data: deleted,
-      });
-    } else {
-      return res.status(StatusCodes.UNAUTHORIZED).json({
-        success: false,
-        message: "You are not authorized to delete this event",
+        sendEmail(
+          [user?.email],
+          [],
+          [],
+          "Event Cancelled: " + (event?.title ?? ""),
+          getEventDeletedNotificationEmailContent(
+            user?.username,
+            event.toObject()
+          )
+        );
       });
     }
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Event deleted successfully",
+      data: deleted,
+    });
   } catch (error) {
     next(error);
   }
@@ -438,7 +573,9 @@ const deleteEvent = async (req, res, next) => {
 
 const updateEvent = async (req, res, next) => {
   try {
-    const event = await models.eventModel.findOne({ _id: req.params.id.split("-")[0] });
+    const event = await models.eventModel.findOne({
+      _id: req.params.id.split("-")[0],
+    });
     delete req.body._id;
     delete req.body.id;
     if (!event) {
@@ -465,7 +602,7 @@ const updateEvent = async (req, res, next) => {
 
       const updated = await models.eventModel.findByIdAndUpdate(
         event._id,
-        req.body,
+        { ...req.body, personal: false },
         {
           new: true,
         }

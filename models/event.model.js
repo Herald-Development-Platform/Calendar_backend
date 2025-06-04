@@ -40,6 +40,10 @@ const eventSchema = new BaseMongooseSchema({
         }
     ],
     notifiedDates: [Date],
+    personal: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 
