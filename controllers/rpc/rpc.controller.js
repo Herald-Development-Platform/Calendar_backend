@@ -2,6 +2,7 @@ const UserModel = require("../../models/user.model");
 const { ROLES } = require("../../constants/role.constants");
 const DepartmentModel = require("../../models/department.model");
 const { StatusCodes } = require("http-status-codes");
+const ProcurementConfigModel = require("../../models/procurementConfig.model");
 
 const getApprovalChain = async (req, res) => {
 	try {
@@ -23,10 +24,9 @@ const getApprovalChain = async (req, res) => {
 			return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: "CEO not found" });
 		}
 
-		const procurementDept = await DepartmentModel.findOne({
-			code: process.env.PROCUREMENT_DEPT_CODE,
-			name: process.env.PROCUREMENT_DEPT_NAME,
-		});
+		const procurementDepartmentId = await ProcurementConfigModel.findOne({});
+
+		const procurementDept = await DepartmentModel.findById(procurementDepartmentId.procurementDept);
 
 		if (!procurementDept) {
 			return res.status(StatusCodes.NOT_FOUND).json({

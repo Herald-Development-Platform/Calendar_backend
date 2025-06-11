@@ -26,7 +26,7 @@ const createProcurementConfig = async (req, res, next) => {
 
 const getProcurementConfig = async (req, res, next) => {
 	try {
-		const config = await ProcurementConfigModel.findOne({});
+		const config = await ProcurementConfigModel.findOne({}).populate("procurementDept");
 		if (!config) {
 			return res.status(StatusCodes.NOT_FOUND).json({
 				success: false,
@@ -44,7 +44,6 @@ const getProcurementConfig = async (req, res, next) => {
 	}
 };
 
-// Update Procurement Config
 const updateProcurementConfig = async (req, res, next) => {
 	try {
 		const config = await ProcurementConfigModel.findOne({});
@@ -70,7 +69,6 @@ const updateProcurementConfig = async (req, res, next) => {
 	}
 };
 
-// Delete Procurement Config
 const deleteProcurementConfig = async (req, res, next) => {
 	try {
 		const config = await ProcurementConfigModel.findOne({});

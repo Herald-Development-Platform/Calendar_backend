@@ -1,17 +1,21 @@
 const { Schema, default: mongoose } = require("mongoose");
 const BaseMongooseSchema = require("./base.schema");
 
-const userDetailSchema = new Schema({
-	name: { type: String, required: true },
-	email: { type: String, required: true },
-	phone: { type: String, required: true },
-});
+const userDetailSchema = new Schema(
+	{
+		name: { type: String, required: true },
+		email: { type: String, required: true },
+		phone: { type: String, required: true },
+	},
+	{
+		_id: false,
+	}
+);
 
 const procurmentConfigSchema = new BaseMongooseSchema({
-	procurementDeptCode: { type: String, required: true },
-	procurementDeptName: { type: String, required: true },
-	ceoDetails: userDetailSchema,
-	procHeadDetails: userDetailSchema,
+	procurementDept: { type: Schema.Types.ObjectId, ref: "Departments", required: true },
+	ceoDetails: { type: userDetailSchema, required: true },
+	procHeadDetails: { type: userDetailSchema, required: true },
 });
 
 const ProcurementConfigModel = mongoose.model("ProcurementConfig", procurmentConfigSchema);
