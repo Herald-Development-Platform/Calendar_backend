@@ -1,8 +1,5 @@
-const {
-	authenticateUserToken,
-	getApprovalChain,
-	getUsersReportingTo,
-} = require("../controllers/auth/authRpc.controller");
+const { authenticateUserToken } = require("../controllers/auth/authRpc.controller");
+const { getApprovalChain, getUsersReportingTo } = require("../controllers/rpc/rpc.controller");
 
 const rpcRouter = require("express").Router();
 
