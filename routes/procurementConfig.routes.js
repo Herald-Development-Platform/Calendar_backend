@@ -1,5 +1,4 @@
 const express = require("express");
-const procurementConfigRouter = express.procurementConfigRouter();
 const {
 	createProcurementConfig,
 	getProcurementConfig,
@@ -7,6 +6,8 @@ const {
 	deleteProcurementConfig,
 } = require("../controllers/procurementConfig/procurementConfig.controller");
 const { verifyToken } = require("../middlewares/auth.middleware");
+
+const procurementConfigRouter = express.Router();
 
 procurementConfigRouter
 	.route("/proc-config")

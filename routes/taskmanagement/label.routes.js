@@ -5,6 +5,7 @@ const {
 	getLabelById,
 	updateLabel,
 	deleteLabel,
+	toggleArchiveLabel,
 } = require("../../controllers/taskmanagement/label.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 
