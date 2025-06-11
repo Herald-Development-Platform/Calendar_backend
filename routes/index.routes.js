@@ -17,12 +17,11 @@ router.use(departmentRouter);
 router.use(notificationRouter);
 router.use(commonRouter);
 router.use(semesterRouter);
+router.use(procurementConfigRouter);
 router.use("/rpc", rpcRouter);
 
-const {
-  uploadImage,
-  getFile,
-} = require("../controllers/upload/upload.controller");
+const { uploadImage, getFile } = require("../controllers/upload/upload.controller");
+const procurementConfigRouter = require("./procurementConfig.routes");
 
 router.post("/file", upload.single("image"), uploadImage);
 router.get("/files/:filename", getFile);
