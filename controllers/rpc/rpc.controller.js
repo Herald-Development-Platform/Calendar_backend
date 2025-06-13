@@ -21,7 +21,7 @@ const getApprovalChain = async (req, res) => {
 				.json({ success: false, message: "CEO details not found" });
 		}
 
-		const ceo = await UserModel.findOne({ email: process.env.CEO_EMAIL });
+		const ceo = await UserModel.findOne({ email: ceoEmail });
 		if (!ceo) {
 			return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: "CEO not found" });
 		}
