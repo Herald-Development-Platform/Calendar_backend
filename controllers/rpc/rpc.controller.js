@@ -7,9 +7,7 @@ const ProcurementConfigModel = require("../../models/procurementConfig.model");
 const getApprovalChain = async (req, res) => {
 	try {
 		const { userId } = req.params;
-
 		const procurementConfig = await ProcurementConfigModel.findOne({});
-
 		const user = await UserModel.findById(userId).populate("reportsTo");
 
 		if (!user) {
@@ -17,7 +15,6 @@ const getApprovalChain = async (req, res) => {
 		}
 
 		const ceoEmail = procurementConfig.ceoDetails.email;
-
 		if (!ceoEmail) {
 			return res
 				.status(StatusCodes.NOT_FOUND)
@@ -25,13 +22,11 @@ const getApprovalChain = async (req, res) => {
 		}
 
 		const ceo = await UserModel.findOne({ email: process.env.CEO_EMAIL });
-
 		if (!ceo) {
 			return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: "CEO not found" });
 		}
 
 		const procurementDept = await DepartmentModel.findById(procurementConfig.procurementDept);
-
 		if (!procurementDept) {
 			return res.status(StatusCodes.NOT_FOUND).json({
 				success: false,
@@ -44,7 +39,7 @@ const getApprovalChain = async (req, res) => {
 
 		let current = await UserModel.findById(user.reportsTo._id).populate("reportsTo");
 		// don't add the current user to the approval chain
-		while (current && current.email !== ceo.email) {
+		while (current.department !== procurementDept._id || (current && current.email !== ceo.email)) {
 			if (!seen.has(current._id.toString())) {
 				approvalChain.push({
 					_id: current._id,
@@ -56,10 +51,9 @@ const getApprovalChain = async (req, res) => {
 				});
 				seen.add(current._id.toString());
 			}
+
 			if (!current.reportsTo) break;
-
 			current = await UserModel.findById(current.reportsTo._id).populate("reportsTo");
-
 			if (current.email === ceo.email) break;
 		}
 
