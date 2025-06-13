@@ -8,14 +8,20 @@ const getApprovalChain = async (req, res) => {
 	try {
 		const { userId } = req.params;
 
-		if (!process.env.CEO_EMAIL) {
-			throw new Error("CEO_EMAIL is not defined in .env file");
-		}
+		const procurementConfig = await ProcurementConfigModel.findOne({});
 
 		const user = await UserModel.findById(userId).populate("reportsTo");
 
 		if (!user) {
 			return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: "User not found" });
+		}
+
+		const ceoEmail = procurementConfig.ceoDetails.email;
+
+		if (!ceoEmail) {
+			return res
+				.status(StatusCodes.NOT_FOUND)
+				.json({ success: false, message: "CEO details not found" });
 		}
 
 		const ceo = await UserModel.findOne({ email: process.env.CEO_EMAIL });
@@ -24,9 +30,7 @@ const getApprovalChain = async (req, res) => {
 			return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: "CEO not found" });
 		}
 
-		const procurementDepartmentId = await ProcurementConfigModel.findOne({});
-
-		const procurementDept = await DepartmentModel.findById(procurementDepartmentId.procurementDept);
+		const procurementDept = await DepartmentModel.findById(procurementConfig.procurementDept);
 
 		if (!procurementDept) {
 			return res.status(StatusCodes.NOT_FOUND).json({
@@ -138,7 +142,6 @@ const getUsersReportingTo = async (req, res, next) => {
 		const { userId } = req.params;
 
 		const manager = await UserModel.findById(userId);
-		console.log("Manager: ", manager);
 
 		if (!manager) {
 			return res.status(StatusCodes.NOT_FOUND).json({
