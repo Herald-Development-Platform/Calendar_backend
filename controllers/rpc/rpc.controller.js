@@ -37,9 +37,11 @@ const getApprovalChain = async (req, res) => {
 		const seen = new Set();
 		const approvalChain = [];
 
-		let current = await UserModel.findById(user.reportsTo._id).populate("reportsTo");
 		// don't add the current user to the approval chain
-		while (current.department !== procurementDept._id || (current && current.email !== ceo.email)) {
+		let current = await UserModel.findById(user.reportsTo._id).populate("reportsTo");
+
+		// terminate if the current user is CEO as we are adding it later or if the user belongs to procurement department as it is also added from proc chain
+		while (current && current.department !== procurementDept._id && current.email !== ceo.email) {
 			if (!seen.has(current._id.toString())) {
 				approvalChain.push({
 					_id: current._id,
