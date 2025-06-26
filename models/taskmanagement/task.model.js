@@ -149,6 +149,11 @@ const taskSchema = new Schema({
     }
   }],
 
+  invitedUsers: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Users'
+  }],
+
   lastActivity: {
     type: Date,
     default: Date.now
