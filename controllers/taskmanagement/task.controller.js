@@ -2,11 +2,16 @@ const { StatusCodes } = require("http-status-codes");
 const models = require("../../models/index.model");
 
 const hasTaskAccess = (task, userId) => {
+  console.log("Checking task access for user:", userId);
+  console.log("Task details:", task);
+
+  console.log(
+    "has access:",
+    task?.createdBy?.toString() === userId?.toString()
+  );
   return (
-    task?.createdBy?.toString() === userId?.toString() ||
-    task?.invitedUsers?.some(
-      (invitedId) => invitedId?.toString() === userId?.toString()
-    )
+    task?.createdBy?._id?.toString() === userId?.toString() ||
+    task?.invitedUsers?.some((invitedId) => invitedId === userId)
   );
 };
 
@@ -415,7 +420,7 @@ const updateTask = async (req, res, next) => {
   }
 };
 
-const deleteTask = async (req, res, next) => {
+const archiveTask = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -449,11 +454,68 @@ const deleteTask = async (req, res, next) => {
   }
 };
 
+const getArchivedTasks = async (req, res, next) => {
+  try {
+    const tasks = await models.taskModel
+      .find({
+        $or: [{ createdBy: req.user._id }, { invitedUsers: req.user._id }],
+        isArchived: true,
+      })
+      .populate("column", "title position")
+      .populate("labels", "title position")
+      .populate("invitedUsers", "username email")
+      .populate("createdBy", "username email")
+      .populate("completedBy", "username email")
+      .populate("archivedBy", "username email")
+      .populate("checklist.completedBy", "username email");
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Archived tasks fetched successfully",
+      data: tasks,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteTask = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const task = await models.taskModel.findById(id);
+    if (!task) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "Task not found",
+      });
+    }
+
+    if (task.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        success: false,
+        message: "Only task owner can delete task",
+      });
+    }
+
+    await task.deleteOne();
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Task deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createTask,
   getTasks,
   getTasksByColumn,
   getTaskById,
   updateTask,
+  archiveTask,
+  getArchivedTasks,
   deleteTask,
 };

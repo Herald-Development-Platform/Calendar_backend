@@ -28,14 +28,14 @@ const taskSchema = new Schema({
   },
   dueDate: Date,
   startDate: Date,
-  estimatedHours: {
-    type: Number,
-    min: 0
-  },
-  actualHours: {
-    type: Number,
-    min: 0
-  },
+  // estimatedHours: {
+  //   type: Number,
+  //   min: 0
+  // },
+  // actualHours: {
+  //   type: Number,
+  //   min: 0
+  // },
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: 'Users',
@@ -166,7 +166,7 @@ const taskSchema = new Schema({
 
 taskSchema.index({ column: 1, position: 1 });
 taskSchema.index({ board: 1, isArchived: 1 });
-taskSchema.index({ assignee: 1 });
+// taskSchema.index({ assignee: 1 });
 taskSchema.index({ dueDate: 1 });
 taskSchema.index({ createdBy: 1 });
 taskSchema.index({ lastActivity: -1 });
