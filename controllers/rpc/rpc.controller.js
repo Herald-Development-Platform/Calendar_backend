@@ -14,7 +14,7 @@ const getApprovalChain = async (req, res) => {
 			return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: "User not found" });
 		}
 
-		const ceoEmail = procurementConfig.ceoDetails.email;
+		const ceoEmail = procurementConfig?.ceoDetails?.email;
 		if (!ceoEmail) {
 			return res
 				.status(StatusCodes.NOT_FOUND)
@@ -28,107 +28,85 @@ const getApprovalChain = async (req, res) => {
 
 		const procurementDept = await DepartmentModel.findById(procurementConfig.procurementDept);
 		if (!procurementDept) {
-			return res.status(StatusCodes.NOT_FOUND).json({
-				success: false,
-				message: "Procurement department not found",
-			});
+			return res
+				.status(StatusCodes.NOT_FOUND)
+				.json({ success: false, message: "Procurement department not found" });
 		}
 
 		const seen = new Set();
 		const approvalChain = [];
 
-		// don't add the current user to the approval chain
-		let current = await UserModel.findById(user.reportsTo._id).populate("reportsTo");
-
-		// terminate if the current user is CEO as we are adding it later or if the user belongs to procurement department as it is also added from proc chain
-		while (current && current.department !== procurementDept._id && current.email !== ceo.email) {
-			if (!seen.has(current._id.toString())) {
+		const addToChain = (user) => {
+			const id = user._id.toString();
+			if (!seen.has(id)) {
 				approvalChain.push({
-					_id: current._id,
-					username: current.username,
-					email: current.email,
-					role: current.role,
-					department: current.department,
-					modifiedBy: current._id,
+					_id: user._id,
+					username: user.username,
+					email: user.email,
+					role: user.role,
+					department: user.department,
+					modifiedBy: user._id,
 				});
-				seen.add(current._id.toString());
+				seen.add(id);
 			}
+		};
 
-			if (!current.reportsTo) break;
-			current = await UserModel.findById(current.reportsTo._id).populate("reportsTo");
-			if (current.email === ceo.email) break;
+		// Traverse the reporting hierarchy up to CEO or procurement department
+		let current = user.reportsTo;
+		while (
+			current &&
+			current._id.toString() !== ceo._id.toString() &&
+			current.department.toString() !== procurementDept._id.toString()
+		) {
+			addToChain(current);
+			current = current.reportsTo;
 		}
 
+		// Add procurement staff chain
 		const procurementHead = await UserModel.findOne({
 			role: ROLES.DEPARTMENT_ADMIN,
 			department: procurementDept._id,
 		});
 
-		const procurementStaffChain = [];
+		if (procurementHead) {
+			let currentProc = procurementHead;
+			const procurementStaffChain = [];
 
-		let currentProc = procurementHead;
-		procurementStaffChain.push({
-			_id: currentProc._id,
-			username: currentProc.username,
-			email: currentProc.email,
-			role: currentProc.role,
-			department: currentProc.department,
-		});
-		seen.add(currentProc._id.toString());
+			while (currentProc) {
+				if (!seen.has(currentProc._id.toString())) {
+					procurementStaffChain.push({
+						_id: currentProc._id,
+						username: currentProc.username,
+						email: currentProc.email,
+						role: currentProc.role,
+						department: currentProc.department,
+						modifiedBy: currentProc._id,
+					});
+					seen.add(currentProc._id.toString());
+				}
 
-		while (currentProc) {
-			const next = await UserModel.findOne({
-				reportsTo: currentProc._id,
-				department: procurementDept._id,
-			});
+				const next = await UserModel.findOne({
+					reportsTo: currentProc._id,
+					department: procurementDept._id,
+				});
+				if (!next || seen.has(next._id.toString())) break;
 
-			if (!next || seen.has(next._id.toString())) break;
+				currentProc = next;
+			}
 
-			procurementStaffChain.push({
-				_id: next._id,
-				username: next.username,
-				email: next.email,
-				role: next.role,
-				department: next.department,
-			});
-			seen.add(next._id.toString());
-
-			currentProc = next;
+			approvalChain.push(...procurementStaffChain.reverse());
 		}
 
-		approvalChain.push(...procurementStaffChain.reverse());
-
-		if (procurementHead && !seen.has(procurementHead._id.toString())) {
-			approvalChain.push({
-				_id: procurementHead._id,
-				username: procurementHead.username,
-				email: procurementHead.email,
-				role: procurementHead.role,
-				department: procurementHead.department,
-			});
-			seen.add(procurementHead._id.toString());
-		}
-
-		if (!seen.has(ceo._id.toString())) {
-			approvalChain.push({
-				_id: ceo._id,
-				username: ceo.username,
-				email: ceo.email,
-				role: ceo.role,
-				department: ceo.department,
-			});
-			seen.add(ceo._id.toString());
-		}
-
+		addToChain(ceo);
 		return res.status(StatusCodes.OK).json({
 			success: true,
 			approvalChain,
 		});
 	} catch (error) {
-		console.error("Error in getApprovalChain:", error);
+		console.error("Error building approval chain:", error);
 		return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
 			success: false,
-			message: "Server error",
+			message: "Internal server error",
 		});
 	}
 };
