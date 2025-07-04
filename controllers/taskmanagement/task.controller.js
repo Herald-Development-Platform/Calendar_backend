@@ -126,7 +126,7 @@ const createTask = async (req, res, next) => {
   }
 };
 
-const getTasks = async (req, res, next) => {
+const   getTasks = async (req, res, next) => {
   try {
     const {
       column,
@@ -509,6 +509,41 @@ const deleteTask = async (req, res, next) => {
   }
 };
 
+const updateTasksPostions = async (req, res, next) => {
+  try {
+    const { tasks } = req.body;
+
+    if (
+      !Array.isArray(tasks) ||
+      tasks.length === 0 ||
+      tasks.some((task) => !task._id || task.position === undefined)
+    ) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Invalid task positions data",
+      });
+    }
+
+    const bulkOps = tasks.map((task) => ({
+      updateOne: {
+        filter: { _id: task._id, createdBy: req.user._id },
+        update: { position: task.position },
+      },
+    }));
+
+    await models.taskModel.bulkWrite(bulkOps);
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Task positions updated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
 module.exports = {
   createTask,
   getTasks,
@@ -518,4 +553,5 @@ module.exports = {
   archiveTask,
   getArchivedTasks,
   deleteTask,
+  updateTasksPostions
 };

@@ -7,12 +7,15 @@ const {
   getTasksByColumn,
   deleteTask,
   getArchivedTasks,
+  updateTasksPostions,
 } = require("../../controllers/taskmanagement/task.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 
 const tasksRouter = require("express").Router();
 
-tasksRouter.route("/").post(verifyToken, createTask).get(verifyToken, getTasks);
+tasksRouter.route("/").post(verifyToken, createTask).get(verifyToken, getTasks).patch(verifyToken, updateTasksPostions); // Route to create a task and get all tasks
+
+
 
 tasksRouter.route("/column/:columnId").get(verifyToken, getTasksByColumn); // Assuming this gets tasks by column
 

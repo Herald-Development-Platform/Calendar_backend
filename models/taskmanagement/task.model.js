@@ -92,7 +92,7 @@ const taskSchema = new Schema({
   }],
 
   attachments: [{
-    name: {
+    name: { 
       type: String,
       required: true
     },
