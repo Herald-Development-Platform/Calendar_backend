@@ -542,6 +542,48 @@ const updateTasksPostions = async (req, res, next) => {
   }
 };
 
+const moveTask = async (req, res, next) => {
+  try {
+    const { taskId, newColumnId, newPosition, affectedTasks } = req.body;
+
+    if (!taskId || !newColumnId || newPosition === undefined || !Array.isArray(affectedTasks)) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Invalid move task data",
+      });
+    }
+
+    // Update the moved task's column and position
+    await models.taskModel.findByIdAndUpdate(
+      taskId,
+      { 
+        column: newColumnId, 
+        position: newPosition 
+      },
+      { new: true }
+    );
+
+    // Update positions for all affected tasks
+    const bulkOps = affectedTasks.map((task) => ({
+      updateOne: {
+        filter: { _id: task._id, createdBy: req.user._id },
+        update: { position: task.position },
+      },
+    }));
+
+    if (bulkOps.length > 0) {
+      await models.taskModel.bulkWrite(bulkOps);
+    }
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Task moved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 
 module.exports = {
@@ -553,5 +595,6 @@ module.exports = {
   archiveTask,
   getArchivedTasks,
   deleteTask,
-  updateTasksPostions
+  updateTasksPostions,
+  moveTask,
 };
