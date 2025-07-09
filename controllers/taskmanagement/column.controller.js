@@ -263,17 +263,29 @@ const deleteColumn = async (req, res, next) => {
     }
 
     // Check if column has tasks
-    const tasksInColumn = await models.taskModel.countDocuments({
-      column: id,
-      createdBy: req.user._id
-    });
+    // const tasksInColumn = await models.taskModel.countDocuments({
+    //   column: id,
+    //   createdBy: req.user._id
+    // });
 
-    if (tasksInColumn > 0) {
-      return res.status(StatusCodes.CONFLICT).json({
-        success: false,
-        message: `Cannot delete column. It contains ${tasksInColumn} task(s). Archive it instead or move tasks to another column.`
-      });
-    }
+    // if (tasksInColumn > 0) {
+    //   return res.status(StatusCodes.CONFLICT).json({
+    //     success: false,
+    //     message: `Cannot delete column. It contains ${tasksInColumn} task(s). Archive it instead or move tasks to another column.`
+    //   });
+    // }
+
+    // change task of this column to archived
+    await models.taskModel.updateMany(
+      { column: id, createdBy: req.user._id },
+      { 
+        isArchived: true,
+        archivedAt: new Date(),
+        archivedBy: req.user._id
+      }
+    );
+
+    
 
     await models.columnModel.findByIdAndDelete(id);
 
