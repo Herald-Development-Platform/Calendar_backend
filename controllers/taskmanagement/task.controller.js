@@ -479,6 +479,28 @@ const getArchivedTasks = async (req, res, next) => {
   }
 };
 
+const getInvitedTasks = async (req, res, next) => {
+  try {
+    const tasks = await models.taskModel
+      .find({ invitedUsers: req.user._id, isArchived: false })
+      .populate("column", "title position")
+      .populate("labels", "title position")
+      .populate("invitedUsers", "username email")
+      .populate("createdBy", "username email")
+      .populate("completedBy", "username email")
+      .populate("archivedBy", "username email")
+      .populate("checklist.completedBy", "username email");
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Invited tasks fetched successfully",
+      data: tasks,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 const deleteTask = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -597,4 +619,5 @@ module.exports = {
   deleteTask,
   updateTasksPostions,
   moveTask,
+  getInvitedTasks,
 };
