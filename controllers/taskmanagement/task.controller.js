@@ -379,12 +379,22 @@ const updateTask = async (req, res, next) => {
         });
       }
     }
+
+
+    const checklistData = updateData.checklist?.map((item) => {
+    return { 
+      text: item.text.trim(),
+      isCompleted: item.isCompleted || false,
+    }
+    
+    })
     // Update task
     const updatedTask = await models.taskModel
       .findByIdAndUpdate(
         id,
         {
           ...updateData,
+          checklist: checklistData || task.checklist,
           updatedAt: new Date(),
           updatedBy: req.user._id,
         },
