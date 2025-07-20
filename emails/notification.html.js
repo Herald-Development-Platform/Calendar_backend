@@ -103,7 +103,7 @@ const getNewEventNotificationEmailContent = (username, event) => {
                 <div class="content">
                     <h1>New Event Scheduled</h1>
                     <p>Dear ${username},</p>
-                    <p>We are pleased to announce that a new event, <strong>${eventName}</strong>, has been scheduled in department ${eventDepartments[0]?.code}.</p>
+                    <p>We are pleased to announce that a new event, <strong>${eventName}</strong>, has been scheduled.</p>
                     <a class="gotolink" style="color:white;" href="${process.env.FRONTEND_URL}?id=${event._id}">Go to event ↗</a>
                     <div class="event-details">
                         <p><strong>Event Details:</strong></p>
