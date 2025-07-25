@@ -2,23 +2,19 @@ const authRouter = require("express").Router();
 
 // Importing Controllers
 const {
-    userRegister,
-    userLogin,
-    generateNewToken,
-    forgetPassword,
-    resetPassword,
-    changePassword,
-    validateResetPassword,
+  userRegister,
+  userLogin,
+  generateNewToken,
+  forgetPassword,
+  resetPassword,
+  changePassword,
+  validateResetPassword,
 } = require("../controllers/auth/user.auth.controller");
 
-const {
-    adminRegister,
-    adminLogin,
-} = require("../controllers/auth/admin.auth.controller");
+const { adminRegister, adminLogin } = require("../controllers/auth/admin.auth.controller");
 const { getAuthUrl, handleGoogleCallback } = require("../controllers/auth/google.auth.controller");
 const { auth } = require("google-auth-library");
 const { verifyToken } = require("../middlewares/auth.middleware");
-
 
 // Admin auth
 authRouter.post("/admin/login", adminLogin);

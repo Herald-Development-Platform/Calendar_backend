@@ -4,13 +4,13 @@ const { getApprovalChain, getUsersReportingTo } = require("../controllers/rpc/rp
 const rpcRouter = require("express").Router();
 
 rpcRouter.use((req, res, next) => {
-	// if (req.headers.rpc_secret !== process.env.RPC_SECRET) {
-	//     return res.status(401).json({
-	//         success: false,
-	//         message: "Unauthorized access",
-	//     });
-	// }
-	next();
+  // if (req.headers.rpc_secret !== process.env.RPC_SECRET) {
+  //     return res.status(401).json({
+  //         success: false,
+  //         message: "Unauthorized access",
+  //     });
+  // }
+  next();
 });
 
 rpcRouter.post("/authenticateToken", authenticateUserToken);

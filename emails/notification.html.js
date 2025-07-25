@@ -1,18 +1,21 @@
 const { timeDifference } = require("../utils/date.utils");
 
 const getNewEventNotificationEmailContent = (username, event) => {
-    const {
-        title: eventName,
-        start: eventDate,
-        location: eventLocation,
-        description: eventDescription,
-        departments: eventDepartments,
-        createdBy: eventCreatedBy
-    } = event;
+  const {
+    title: eventName,
+    start: eventDate,
+    location: eventLocation,
+    description: eventDescription,
+    departments: eventDepartments,
+    createdBy: eventCreatedBy,
+  } = event;
 
-    const eventTime = new Date(event.start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const eventTime = new Date(event.start).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-    return `
+  return `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -113,7 +116,10 @@ const getNewEventNotificationEmailContent = (username, event) => {
                         <p><strong>Location:</strong> ${eventLocation}</p>
                         <p><strong>Description:</strong> ${eventDescription}</p>
                         <p><strong>Created By:</strong> ${eventCreatedBy?.username}</p>
-                        <p><strong>Departments:</strong> ${eventDepartments?.map(d => d.code).filter(d => d).join(", ")}</p>
+                        <p><strong>Departments:</strong> ${eventDepartments
+                          ?.map(d => d.code)
+                          .filter(d => d)
+                          .join(", ")}</p>
                         </div>
                     <p>We hope you can join us and make this event a great success.</p>
                     <p>Best regards,<br>Herald College Kathmandu</p>
@@ -136,21 +142,24 @@ const getNewEventNotificationEmailContent = (username, event) => {
         </body>
         </html>
     `;
-}
+};
 
 const getEventUpdatedNotificationEmailContent = (username, event) => {
-    const {
-        title: eventName,
-        start: eventDate,
-        location: eventLocation,
-        description: eventDescription,
-        departments: eventDepartments,
-        createdBy: eventCreatedBy
-    } = event;
+  const {
+    title: eventName,
+    start: eventDate,
+    location: eventLocation,
+    description: eventDescription,
+    departments: eventDepartments,
+    createdBy: eventCreatedBy,
+  } = event;
 
-    const eventTime = new Date(event.start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const eventTime = new Date(event.start).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-    return `
+  return `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -253,7 +262,10 @@ const getEventUpdatedNotificationEmailContent = (username, event) => {
                         <p><strong>Location:</strong> ${eventLocation}</p>
                         <p><strong>Description:</strong> ${eventDescription}</p>
                         <p><strong>Created By:</strong> ${eventCreatedBy?.username}</p>
-                        <p><strong>Departments:</strong> ${eventDepartments?.map(d => d.code).filter(d => d).join(", ")}</p>
+                        <p><strong>Departments:</strong> ${eventDepartments
+                          ?.map(d => d.code)
+                          .filter(d => d)
+                          .join(", ")}</p>
                     </div>
                     <p>We hope you can join us and make this event a great success.</p>
                     <p>Best regards,<br>Herald College Kathmandu</p>
@@ -276,23 +288,26 @@ const getEventUpdatedNotificationEmailContent = (username, event) => {
         </body>
         </html>
     `;
-}
+};
 
 const getUpcomingEmailNotificationContent = (username, event) => {
-    const {
-        title: eventName,
-        start: eventDate,
-        location: eventLocation,
-        description: eventDescription,
-        departments: eventDepartments,
-        createdBy: eventCreatedBy
-    } = event;
+  const {
+    title: eventName,
+    start: eventDate,
+    location: eventLocation,
+    description: eventDescription,
+    departments: eventDepartments,
+    createdBy: eventCreatedBy,
+  } = event;
 
-    const eventTime = new Date(event.start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const eventTime = new Date(event.start).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-    const remaningTime = timeDifference(event.start);
+  const remaningTime = timeDifference(event.start);
 
-    return `
+  return `
     <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -393,7 +408,10 @@ const getUpcomingEmailNotificationContent = (username, event) => {
                         <p><strong>Location:</strong> ${eventLocation}</p>
                         <p><strong>Description:</strong> ${eventDescription}</p>
                         <p><strong>Created By:</strong> ${eventCreatedBy?.username}</p>
-                        <p><strong>Departments:</strong> ${eventDepartments?.map(d => d.code).filter(d => d).join(", ")}</p>
+                        <p><strong>Departments:</strong> ${eventDepartments
+                          ?.map(d => d.code)
+                          .filter(d => d)
+                          .join(", ")}</p>
                     </div>
                     <p>Best regards,<br>Herald College Kathmandu</p>
                 <svg fill=none viewBox="0 0 33 32"width=70 xmlns=http://www.w3.org/2000/svg>
@@ -415,17 +433,17 @@ const getUpcomingEmailNotificationContent = (username, event) => {
         </body>
         </html>
     `;
-}
+};
 
 const getEventDeletedNotificationEmailContent = (username, event) => {
-    const {
-        title: eventName,
-        start: eventDate,
-        location: eventLocation,
-        description: eventDescription
-    } = event;
+  const {
+    title: eventName,
+    start: eventDate,
+    location: eventLocation,
+    description: eventDescription,
+  } = event;
 
-    return `
+  return `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -525,10 +543,9 @@ const getEventDeletedNotificationEmailContent = (username, event) => {
     `;
 };
 
-
 module.exports = {
-    getNewEventNotificationEmailContent,
-    getEventUpdatedNotificationEmailContent,
-    getUpcomingEmailNotificationContent,
-    getEventDeletedNotificationEmailContent,
-}
+  getNewEventNotificationEmailContent,
+  getEventUpdatedNotificationEmailContent,
+  getUpcomingEmailNotificationContent,
+  getEventDeletedNotificationEmailContent,
+};

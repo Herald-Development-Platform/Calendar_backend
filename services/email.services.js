@@ -20,7 +20,7 @@ const sendEmail = async (to, cc, bcc, subject, html) => {
     return await new Promise((resolve, reject) => {
       transport.sendMail(
         {
-          from:`"Herald Events" <${NODE_MAILER_EMAIL}>` ,
+          from: `"Herald Events" <${NODE_MAILER_EMAIL}>`,
           to,
           cc,
           bcc,
@@ -35,14 +35,14 @@ const sendEmail = async (to, cc, bcc, subject, html) => {
             console.log("Email has been sent successfully to " + to);
             resolve({ success: true, response: response });
           }
-        },
+        }
       );
     });
   } catch (error) {
     console.log(error);
     return {
-        success: false,
-        error: error.message
+      success: false,
+      error: error.message,
     };
   }
 };

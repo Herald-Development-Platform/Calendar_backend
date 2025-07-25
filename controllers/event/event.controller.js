@@ -2,9 +2,7 @@ const { ROLES } = require("../../constants/role.constants");
 const models = require("../../models/index.model");
 const crypto = require("crypto");
 const { StatusCodes } = require("http-status-codes");
-const {
-  getDepartmentByIdOrCode,
-} = require("../department/department.controller");
+const { getDepartmentByIdOrCode } = require("../department/department.controller");
 const { RECURRING_TYPES } = require("../../constants/event.constants");
 const { PERMISSIONS } = require("../../constants/permissions.constants");
 const {
@@ -16,16 +14,14 @@ const {
   getEventUpdatedNotificationEmailContent,
   getEventDeletedNotificationEmailContent,
 } = require("../../emails/notification.html");
-const {
-  createNotification,
-} = require("../notification/notification.controller");
+const { createNotification } = require("../notification/notification.controller");
 const { sendEmail } = require("../../services/email.services");
 const { google } = require("googleapis");
 
-const sendNewEventCreatedEmail = async (event) => {
+const sendNewEventCreatedEmail = async event => {
   let departmentUsers = [];
   await Promise.all(
-    event.departments.map(async (department) => {
+    event.departments.map(async department => {
       let currentDepartmentUsers = await models.userModel.find({
         department,
       });
@@ -34,7 +30,7 @@ const sendNewEventCreatedEmail = async (event) => {
   );
 
   await Promise.all(
-    event.involvedUsers.map(async (userID) => {
+    event.involvedUsers.map(async userID => {
       const user = await models.userModel.findById(userID);
       if (!user) {
         throw new Error("User not found");
@@ -50,12 +46,12 @@ const sendNewEventCreatedEmail = async (event) => {
   // });
   // departmentUsers = Array.from(new Set(departmentUsers));
   let eventDepartments = await models.departmentModel.find({
-    _id: { $in: event.departments?.map((d) => d?.toString() ?? "-") },
+    _id: { $in: event.departments?.map(d => d?.toString() ?? "-") },
   });
-  eventDepartments = eventDepartments.map((d) => d.toObject());
+  eventDepartments = eventDepartments.map(d => d.toObject());
   let createdByUser = await models.userModel.findById(event.createdBy);
   createdByUser = createdByUser.toObject();
-  departmentUsers = departmentUsers.map((user) => {
+  departmentUsers = departmentUsers.map(user => {
     const notification = createNotification({
       user: user._id,
       contextId: event._id,
@@ -73,13 +69,7 @@ const sendNewEventCreatedEmail = async (event) => {
         createdBy: createdByUser,
       });
       try {
-        sendEmail(
-          user.email,
-          [],
-          [],
-          "New Event Created:" + event?.title ?? "",
-          emailContent
-        );
+        sendEmail(user.email, [], [], "New Event Created:" + event?.title ?? "", emailContent);
       } catch (error) {
         console.error("ERROR SENDING NEW EVENT EMAIL:", error?.message);
       }
@@ -87,10 +77,10 @@ const sendNewEventCreatedEmail = async (event) => {
   });
 };
 
-const sendEventUpdatedEmail = async (event) => {
+const sendEventUpdatedEmail = async event => {
   let departmentUsers = [];
   await Promise.all(
-    event.departments.map(async (department) => {
+    event.departments.map(async department => {
       let currentDepartmentUsers = await models.userModel.find({
         department,
       });
@@ -99,7 +89,7 @@ const sendEventUpdatedEmail = async (event) => {
   );
 
   await Promise.all(
-    event.involvedUsers.map(async (userID) => {
+    event.involvedUsers.map(async userID => {
       const user = await models.userModel.findById(userID);
       if (!user) {
         throw new Error("User not found");
@@ -116,14 +106,14 @@ const sendEventUpdatedEmail = async (event) => {
   // departmentUsers = Array.from(new Set(departmentUsers));
 
   let eventDepartments = await models.departmentModel.find({
-    _id: { $in: event.departments?.map((d) => d?.toString() ?? "-") },
+    _id: { $in: event.departments?.map(d => d?.toString() ?? "-") },
   });
 
-  eventDepartments = eventDepartments.map((d) => d.toObject());
+  eventDepartments = eventDepartments.map(d => d.toObject());
   let createdByUser = await models.userModel.findById(event.createdBy);
   createdByUser = createdByUser.toObject();
 
-  departmentUsers = departmentUsers.map((user) => {
+  departmentUsers = departmentUsers.map(user => {
     const notification = createNotification({
       user: user._id,
       contextId: event._id,
@@ -134,21 +124,12 @@ const sendEventUpdatedEmail = async (event) => {
       user.donotDisturbState === DONOT_DISTURB_STATE.DEFAULT ||
       new Date() >= new Date(user.notificationExpiry)
     ) {
-      const emailContent = getEventUpdatedNotificationEmailContent(
-        user.username,
-        {
-          ...event.toObject(),
-          departments: eventDepartments,
-          createdBy: createdByUser,
-        }
-      );
-      sendEmail(
-        user.email,
-        [],
-        [],
-        "Event Updated:" + event?.title ?? "",
-        emailContent
-      );
+      const emailContent = getEventUpdatedNotificationEmailContent(user.username, {
+        ...event.toObject(),
+        departments: eventDepartments,
+        createdBy: createdByUser,
+      });
+      sendEmail(user.email, [], [], "Event Updated:" + event?.title ?? "", emailContent);
     }
   });
 };
@@ -206,7 +187,7 @@ const createEvent = async (req, res, next) => {
   }
 };
 
-const generateOccurrences = (event) => {
+const generateOccurrences = event => {
   let occurrences = [];
   let currentDate = new Date(event.start);
   const recurrenceEnd = new Date(event.recurrenceEnd);
@@ -233,11 +214,10 @@ const generateOccurrences = (event) => {
   while (currentDate <= recurrenceEnd) {
     currentDate = new Date(currentDate);
     let endDate = new Date(
-      currentDate.getTime() +
-        (new Date(event.end).getTime() - new Date(event.start).getTime())
+      currentDate.getTime() + (new Date(event.end).getTime() - new Date(event.start).getTime())
     );
     if (event.exceptionRanges && event.exceptionRanges.length > 0) {
-      const isException = event.exceptionRanges.some((range) => {
+      const isException = event.exceptionRanges.some(range => {
         return (
           new Date(range.start).getTime() <= currentDate.getTime() &&
           new Date(range.end).getTime() >= endDate.getTime()
@@ -249,9 +229,7 @@ const generateOccurrences = (event) => {
         continue;
       }
     }
-    let nonDuplicateId = `${event._id}-${crypto
-      .randomBytes(4)
-      .toString("hex")}`;
+    let nonDuplicateId = `${event._id}-${crypto.randomBytes(4).toString("hex")}`;
     let occurrence = {
       ...event,
       start: new Date(currentDate.toISOString()),
@@ -285,7 +263,7 @@ const getEvents = async (req, res, next) => {
       if (colors) {
         colors = colors.replaceAll("#", "");
         colors = colors.split(",");
-        query.color = { $in: colors.map((c) => new RegExp(c, "i")) };
+        query.color = { $in: colors.map(c => new RegExp(c, "i")) };
       }
 
       if (q) {
@@ -314,7 +292,7 @@ const getEvents = async (req, res, next) => {
         .populate("createdBy", "email username photo _id role")
         .sort({ start: 1 });
 
-      events = events.filter((event) => {
+      events = events.filter(event => {
         if (!event.personal) {
           return true;
         }
@@ -328,7 +306,7 @@ const getEvents = async (req, res, next) => {
         colors = colors.replaceAll("#", "");
         colors = colors.split(",");
         query["$and"].push({
-          color: { $in: colors.map((c) => new RegExp(c, "i")) },
+          color: { $in: colors.map(c => new RegExp(c, "i")) },
         });
       }
       if (q) {
@@ -360,7 +338,7 @@ const getEvents = async (req, res, next) => {
         .populate("createdBy", "email username photo _id role")
         .sort({ start: 1 });
 
-      events = events.filter((event) => {
+      events = events.filter(event => {
         if (!event.personal) {
           return true;
         }
@@ -369,7 +347,7 @@ const getEvents = async (req, res, next) => {
     }
 
     let allEvents = [];
-    events.map((event) => {
+    events.map(event => {
       if (event.toObject) {
         event = event.toObject();
       } else {
@@ -426,8 +404,7 @@ const deleteEvent = async (req, res, next) => {
     const userIsAllowed =
       req.user.role === ROLES.SUPER_ADMIN ||
       event.createdBy?.toString() === req.user?.id?.toString() ||
-      (event.departments[0]?.toString() ===
-        req.user.department?._id?.toString() &&
+      (event.departments[0]?.toString() === req.user.department?._id?.toString() &&
         req.user.role === ROLES.DEPARTMENT_ADMIN);
 
     if (!userIsAllowed) {
@@ -463,10 +440,7 @@ const deleteEvent = async (req, res, next) => {
         await models.syncedEventModel.findByIdAndDelete(synced._id);
       }
     } catch (googleDeleteErr) {
-      console.error(
-        "Failed to delete from Google Calendar:",
-        googleDeleteErr.message
-      );
+      console.error("Failed to delete from Google Calendar:", googleDeleteErr.message);
     }
 
     // 🗑️ Delete local event
@@ -474,13 +448,10 @@ const deleteEvent = async (req, res, next) => {
 
     if (deleted.end > new Date()) {
       const notificationUsers = await models.userModel.find({
-        $or: [
-          { department: { $in: event.departments } },
-          { _id: { $in: event.involvedUsers } },
-        ],
+        $or: [{ department: { $in: event.departments } }, { _id: { $in: event.involvedUsers } }],
       });
 
-      notificationUsers.forEach((user) => {
+      notificationUsers.forEach(user => {
         createNotification({
           user: user._id,
           contextId: event._id,
@@ -493,10 +464,7 @@ const deleteEvent = async (req, res, next) => {
           [],
           [],
           "Event Cancelled: " + (event?.title ?? ""),
-          getEventDeletedNotificationEmailContent(
-            user?.username,
-            event.toObject()
-          )
+          getEventDeletedNotificationEmailContent(user?.username, event.toObject())
         );
       });
     }
@@ -532,13 +500,13 @@ const updateEvent = async (req, res, next) => {
     ) {
       const departmentCodes = req.body.departments;
       let departmentsIds = await Promise.all(
-        departmentCodes.map(async (code) => {
+        departmentCodes.map(async code => {
           const { data: departmentData } = await getDepartmentByIdOrCode(code);
           return departmentData?._id;
         })
       );
       console.log("event req.params.id: ", event);
-      req.body.departments = departmentsIds.filter((val) => val);
+      req.body.departments = departmentsIds.filter(val => val);
 
       const updated = await models.eventModel.findByIdAndUpdate(
         event._id,

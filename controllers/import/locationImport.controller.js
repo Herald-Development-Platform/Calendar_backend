@@ -1,18 +1,15 @@
-
 const { StatusCodes } = require("http-status-codes");
 const xlsx = require("xlsx");
 const fs = require("fs");
 const models = require("../../models/index.model");
 
-const extractLocationData = async ({
-  row,
-  sheetName,
-  rowIndex,
-  locations,
-}) => {
+const extractLocationData = async ({ row, sheetName, rowIndex, locations }) => {
   let rowValidated = {};
-  Object.keys(row).forEach((value) => {
-    let newKey = value.trim().toLowerCase().replaceAll(/[^a-zA-Z0-9]/ig, "");
+  Object.keys(row).forEach(value => {
+    let newKey = value
+      .trim()
+      .toLowerCase()
+      .replaceAll(/[^a-zA-Z0-9]/gi, "");
     switch (newKey) {
       case "name":
       case "title":
@@ -43,10 +40,8 @@ const extractLocationData = async ({
     result.reason = "Couldn't read the 'name' of location!";
   }
 
-  locations.forEach((location) => {
-    if (
-      location.name?.toLowerCase().trim() === result.data?.name?.toLowerCase().trim()
-    ) {
+  locations.forEach(location => {
+    if (location.name?.toLowerCase().trim() === result.data?.name?.toLowerCase().trim()) {
       result.reason = `Location with name '${result.data.name}' already exists!`;
     }
   });
@@ -70,7 +65,7 @@ const saveUploadedLocations = async (req, res, next) => {
     let data = [];
 
     const xlxsFile = xlsx.readFile(file.path);
-    xlxsFile.SheetNames.forEach((sheet_name) => {
+    xlxsFile.SheetNames.forEach(sheet_name => {
       let sheet_data = xlsx.utils.sheet_to_json(xlxsFile.Sheets[sheet_name]);
       sheet_data.forEach((excelRow, i) => {
         data.push({
@@ -82,10 +77,10 @@ const saveUploadedLocations = async (req, res, next) => {
     });
 
     let locations = await models.locationModel.find({});
-    locations = locations.map(location=>location.toObject());
+    locations = locations.map(location => location.toObject());
 
     let extracted = await Promise.all(
-      data.map((row) =>
+      data.map(row =>
         extractLocationData({
           row: row.excelRow,
           sheetName: row.sheetName,
@@ -94,9 +89,9 @@ const saveUploadedLocations = async (req, res, next) => {
         })
       )
     );
-    
-    let failedRows = extracted.filter((row) => !row.success);
-    let validRows = extracted.filter((row) => row.success);
+
+    let failedRows = extracted.filter(row => !row.success);
+    let validRows = extracted.filter(row => row.success);
 
     if (failedRows.length > 0) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -107,20 +102,20 @@ const saveUploadedLocations = async (req, res, next) => {
     }
 
     const insertedLocations = await Promise.all(
-      validRows.map(async (row) => {
+      validRows.map(async row => {
         let insertedLocation = await new models.locationModel({
-          ...(row.data),
+          ...row.data,
         }).save();
         return insertedLocation.toObject();
       })
-     );
+    );
 
     fs.unlinkSync(file.path);
 
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Location file uploaded successfully",
-      data: insertedLocations
+      data: insertedLocations,
     });
   } catch (error) {
     console.log(error);
@@ -129,5 +124,5 @@ const saveUploadedLocations = async (req, res, next) => {
 };
 
 module.exports = {
-    saveUploadedLocations,
+  saveUploadedLocations,
 };

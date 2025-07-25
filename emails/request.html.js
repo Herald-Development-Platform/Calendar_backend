@@ -1,15 +1,7 @@
+const getDepartmentRequestHtml = request => {
+  const { requestorName, requestorEmail, departmentName, requestorReason, approveLink } = request;
 
-const getDepartmentRequestHtml = (request) => {
-
-    const {
-        requestorName,
-        requestorEmail,
-        departmentName,
-        requestorReason,
-        approveLink,
-    } = request;
-
-    return `
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -120,11 +112,11 @@ const getDepartmentRequestHtml = (request) => {
         </div>
     </body>
     </html>    
-    `
-}
+    `;
+};
 
 const getDepartmentAcceptHtml = (username, departmentCode) => {
-    return `
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -198,9 +190,9 @@ const getDepartmentAcceptHtml = (username, departmentCode) => {
     </body>
     </html>
     `;
-}
+};
 
 module.exports = {
-    getDepartmentRequestHtml,
-    getDepartmentAcceptHtml
-}
+  getDepartmentRequestHtml,
+  getDepartmentAcceptHtml,
+};

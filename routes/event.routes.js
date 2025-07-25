@@ -10,15 +10,9 @@ const {
   updateEvent,
 } = require("../controllers/event/event.controller");
 
-const {
-  convertEventsToIcs,
-  convertIcsToEvents,
-} = require("../controllers/ics/ics.controller");
+const { convertEventsToIcs, convertIcsToEvents } = require("../controllers/ics/ics.controller");
 
-const {
-  verifyToken,
-  isGoogleAuthorized,
-} = require("../middlewares/auth.middleware");
+const { verifyToken, isGoogleAuthorized } = require("../middlewares/auth.middleware");
 const {
   getGoogleEvents,
   syncGoogleEvents,
@@ -31,18 +25,8 @@ eventRouter.get("/event", verifyToken, getEvents);
 eventRouter.put("/event/:id", verifyToken, updateEvent);
 eventRouter.delete("/event/:id", verifyToken, isGoogleAuthorized(), deleteEvent);
 
-eventRouter.get(
-  "/google/events",
-  verifyToken,
-  isGoogleAuthorized(false),
-  getGoogleEvents
-);
+eventRouter.get("/google/events", verifyToken, isGoogleAuthorized(false), getGoogleEvents);
 
-eventRouter.post(
-  "/google/sync",
-  verifyToken,
-  isGoogleAuthorized(false),
-  syncGoogleEvents
-);
+eventRouter.post("/google/sync", verifyToken, isGoogleAuthorized(false), syncGoogleEvents);
 
 module.exports = eventRouter;

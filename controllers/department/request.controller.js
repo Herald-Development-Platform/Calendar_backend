@@ -1,19 +1,15 @@
 const models = require("../../models/index.model");
 const { StatusCodes } = require("http-status-codes");
-const {
-  getDepartmentByIdOrCode,
-} = require("../department/department.controller");
+const { getDepartmentByIdOrCode } = require("../department/department.controller");
 const { sendEmail } = require("../../services/email.services");
-const {
-  getDepartmentRequestHtml,
-  getDepartmentAcceptHtml,
-} = require("../../emails/request.html");
+const { getDepartmentRequestHtml, getDepartmentAcceptHtml } = require("../../emails/request.html");
 const { ROLES } = require("../../constants/role.constants");
-const {
-  REQUEST_STATES,
-} = require("../../constants/departmentRequest.constants");
+const { REQUEST_STATES } = require("../../constants/departmentRequest.constants");
 const { createNotification } = require("../notification/notification.controller");
-const { NOTIFICATION_CONTEXT, DONOT_DISTURB_STATE } = require("../../constants/notification.constants");
+const {
+  NOTIFICATION_CONTEXT,
+  DONOT_DISTURB_STATE,
+} = require("../../constants/notification.constants");
 
 const createDepartmentRequest = async (req, res, next) => {
   try {
@@ -43,8 +39,7 @@ const createDepartmentRequest = async (req, res, next) => {
     if (alreadyExistingRequest) {
       return res.status(StatusCodes.CONFLICT).json({
         success: false,
-        message:
-          "You have already requested to join this department. Please wait for approval.",
+        message: "You have already requested to join this department. Please wait for approval.",
       });
     }
 
@@ -61,28 +56,31 @@ const createDepartmentRequest = async (req, res, next) => {
       if (superAdmin) {
         admins.push(superAdmin);
       }
-    } catch (error) {
+    } catch (error) {}
 
-    }
-
-    admins = admins.filter((admin) => {
-      if (admin.donotDisturbState !== DONOT_DISTURB_STATE.DEFAULT && admin.notificationExpiry && new Date() < new Date(admin.notificationExpiry)) {
+    admins = admins.filter(admin => {
+      if (
+        admin.donotDisturbState !== DONOT_DISTURB_STATE.DEFAULT &&
+        admin.notificationExpiry &&
+        new Date() < new Date(admin.notificationExpiry)
+      ) {
         return false;
       }
       return true;
     });
 
-    await Promise.all(admins.map((user) => {
-
-      return createNotification({
-        user: user._id,
-        message: `You have a new department request from ${req.user.username}`,
-        context: NOTIFICATION_CONTEXT.DEPARTMENT_REQUEST,
-        contextId: departmentData._id,
+    await Promise.all(
+      admins.map(user => {
+        return createNotification({
+          user: user._id,
+          message: `You have a new department request from ${req.user.username}`,
+          context: NOTIFICATION_CONTEXT.DEPARTMENT_REQUEST,
+          contextId: departmentData._id,
+        });
       })
-    }));
+    );
 
-    const adminEmails = admins.map((admin) => admin.email);
+    const adminEmails = admins.map(admin => admin.email);
 
     const response = await sendEmail(
       adminEmails,
@@ -181,7 +179,7 @@ const updateRequestStatus = async (req, res, next) => {
 
     if (
       req.user.role !== ROLES.SUPER_ADMIN &&
-      !department.admins.map((d) => d.toString()).includes(req.user?.id)
+      !department.admins.map(d => d.toString()).includes(req.user?.id)
     ) {
       return res.status(StatusCodes.FORBIDDEN).json({
         success: false,
@@ -198,17 +196,19 @@ const updateRequestStatus = async (req, res, next) => {
       const departmentUsers = await models.userModel.find({
         department: department._id,
       });
-      await Promise.all(departmentUsers.map((user) => {
-        if (user._id.toString() === updatedUser._id.toString()) {
-          return;
-        }
-        return createNotification({
-          user: user._id,
-          message: `${updatedUser.username} has joined the department ${department.code} - ${department.name}`,
-          context: NOTIFICATION_CONTEXT.DEPARTMENT_JOIN,
-          contextId: updatedUser._id,
+      await Promise.all(
+        departmentUsers.map(user => {
+          if (user._id.toString() === updatedUser._id.toString()) {
+            return;
+          }
+          return createNotification({
+            user: user._id,
+            message: `${updatedUser.username} has joined the department ${department.code} - ${department.name}`,
+            context: NOTIFICATION_CONTEXT.DEPARTMENT_JOIN,
+            contextId: updatedUser._id,
+          });
         })
-      }));
+      );
       await sendEmail(
         [user.email],
         [],
@@ -218,12 +218,11 @@ const updateRequestStatus = async (req, res, next) => {
       );
     }
 
-    const updatedDepartmentRequest =
-      await models.departmentRequestModel.findByIdAndUpdate(
-        departmentRequestId,
-        { status },
-        { new: true }
-      );
+    const updatedDepartmentRequest = await models.departmentRequestModel.findByIdAndUpdate(
+      departmentRequestId,
+      { status },
+      { new: true }
+    );
 
     return res.status(StatusCodes.OK).json({
       success: true,

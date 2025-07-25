@@ -1,4 +1,3 @@
-
 const { StatusCodes } = require("http-status-codes");
 const xlsx = require("xlsx");
 const fs = require("fs");
@@ -7,15 +6,13 @@ const { makePascalCase } = require("../../utils/string.utils");
 const { getRandomColor } = require("../../utils/color.utils");
 const { convertExcelDateToJSDate } = require("../../utils/date.utils");
 
-const extractSemesterData = async ({
-  row,
-  sheetName,
-  rowIndex,
-  semesters,
-}) => {
+const extractSemesterData = async ({ row, sheetName, rowIndex, semesters }) => {
   let rowValidated = {};
-  Object.keys(row).forEach((value) => {
-    let newKey = value.trim().toLowerCase().replaceAll(/[^a-zA-Z0-9]/ig, "");
+  Object.keys(row).forEach(value => {
+    let newKey = value
+      .trim()
+      .toLowerCase()
+      .replaceAll(/[^a-zA-Z0-9]/gi, "");
     switch (newKey) {
       case "semester":
       case "semestername":
@@ -101,7 +98,7 @@ const saveUploadedSemesters = async (req, res, next) => {
     let data = [];
 
     const xlxsFile = xlsx.readFile(file.path);
-    xlxsFile.SheetNames.forEach((sheet_name) => {
+    xlxsFile.SheetNames.forEach(sheet_name => {
       let sheet_data = xlsx.utils.sheet_to_json(xlxsFile.Sheets[sheet_name]);
       sheet_data.forEach((excelRow, i) => {
         data.push({
@@ -113,17 +110,17 @@ const saveUploadedSemesters = async (req, res, next) => {
     });
 
     let extracted = await Promise.all(
-      data.map((row) =>
+      data.map(row =>
         extractSemesterData({
-            row: row.excelRow,
-            sheetName: row.sheetName,
-            rowIndex: row.rowIndex,
+          row: row.excelRow,
+          sheetName: row.sheetName,
+          rowIndex: row.rowIndex,
         })
       )
     );
-    
-    let failedRows = extracted.filter((row) => !row.success);
-    let validRows = extracted.filter((row) => row.success);
+
+    let failedRows = extracted.filter(row => !row.success);
+    let validRows = extracted.filter(row => row.success);
 
     if (failedRows.length > 0) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -134,20 +131,20 @@ const saveUploadedSemesters = async (req, res, next) => {
     }
 
     const insertedData = await Promise.all(
-      validRows.map(async (row) => {
+      validRows.map(async row => {
         let insertedSemester = await new models.semesterModel({
-          ...(row.data),
+          ...row.data,
         }).save();
         return insertedSemester.toObject();
       })
-     );
+    );
 
     fs.unlinkSync(file.path);
 
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Semester file uploaded successfully",
-      data: insertedData
+      data: insertedData,
     });
   } catch (error) {
     console.log(error);
@@ -156,5 +153,5 @@ const saveUploadedSemesters = async (req, res, next) => {
 };
 
 module.exports = {
-    saveUploadedSemesters,
+  saveUploadedSemesters,
 };

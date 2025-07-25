@@ -1,11 +1,11 @@
 const {
-	createLabel,
-	getLabels,
-	reorderLabels,
-	getLabelById,
-	updateLabel,
-	deleteLabel,
-	toggleArchiveLabel,
+  createLabel,
+  getLabels,
+  reorderLabels,
+  getLabelById,
+  updateLabel,
+  deleteLabel,
+  toggleArchiveLabel,
 } = require("../../controllers/taskmanagement/label.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 
@@ -16,10 +16,10 @@ labelsRouter.route("/").post(verifyToken, createLabel).get(verifyToken, getLabel
 labelsRouter.route("/reorder").post(verifyToken, reorderLabels);
 
 labelsRouter
-	.route("/:id")
-	.get(verifyToken, getLabelById)
-	.put(verifyToken, updateLabel)
-	.delete(verifyToken, deleteLabel);
+  .route("/:id")
+  .get(verifyToken, getLabelById)
+  .put(verifyToken, updateLabel)
+  .delete(verifyToken, deleteLabel);
 
 labelsRouter.patch("/:id/toggle-archive", verifyToken, toggleArchiveLabel);
 

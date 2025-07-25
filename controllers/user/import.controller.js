@@ -10,18 +10,14 @@ const { DEFAULT_PERMISSIONS } = require("../../constants/permissions.constants")
 const { getImportRegistrationHTML } = require("../../emails/registration.html");
 const { makePascalCase, generateRandomString } = require("../../utils/string.utils");
 
-
 // from other side of the world
-const extractUserData = async ({
-  row,
-  sheetName,
-  rowIndex,
-  departments,
-  userDepartment,
-}) => {
+const extractUserData = async ({ row, sheetName, rowIndex, departments, userDepartment }) => {
   let rowValidated = {};
-  Object.keys(row).forEach((value) => {
-    let newKey = value.trim().toLowerCase().replaceAll(/[^a-zA-Z0-9]/ig, "");
+  Object.keys(row).forEach(value => {
+    let newKey = value
+      .trim()
+      .toLowerCase()
+      .replaceAll(/[^a-zA-Z0-9]/gi, "");
     console.log("New Key", newKey);
     switch (newKey) {
       case "email":
@@ -49,10 +45,10 @@ const extractUserData = async ({
       case "departments":
       case "branch":
       case "section":
-        const foundDepartment = departments.find((val) => {
+        const foundDepartment = departments.find(val => {
           let regex = new RegExp(row[value], "ig");
           return regex.test(val.name) || regex.test(val.code);
-        })
+        });
         if (foundDepartment) {
           rowValidated["department"] = foundDepartment._id;
         }
@@ -86,12 +82,14 @@ const extractUserData = async ({
   }
 
   if (result.success) {
-    const alreadyExistingUser = await models.userModel.findOne({
-      email: result.data.email.trim().toLowerCase(),
-      department: {
-        $exists: true,
-      }
-    }).populate("department");
+    const alreadyExistingUser = await models.userModel
+      .findOne({
+        email: result.data.email.trim().toLowerCase(),
+        department: {
+          $exists: true,
+        },
+      })
+      .populate("department");
 
     if (alreadyExistingUser && alreadyExistingUser.department) {
       result.reason = "User already exists with that email.";
@@ -111,7 +109,7 @@ const saveUploadedUsers = async (req, res, next) => {
     let data = [];
 
     const xlxsFile = xlsx.readFile(file.path);
-    xlxsFile.SheetNames.forEach((sheet_name) => {
+    xlxsFile.SheetNames.forEach(sheet_name => {
       let sheet_data = xlsx.utils.sheet_to_json(xlxsFile.Sheets[sheet_name]);
       sheet_data.forEach((excelRow, i) => {
         data.push({
@@ -130,7 +128,7 @@ const saveUploadedUsers = async (req, res, next) => {
     console.log("User Department", userDepartment);
 
     let extracted = await Promise.all(
-      data.map((row) =>
+      data.map(row =>
         extractUserData({
           row: row.excelRow,
           sheetName: row.sheetName,
@@ -140,8 +138,8 @@ const saveUploadedUsers = async (req, res, next) => {
         })
       )
     );
-    let failedRows = extracted.filter((row) => !row.success);
-    let validRows = extracted.filter((row) => row.success);
+    let failedRows = extracted.filter(row => !row.success);
+    let validRows = extracted.filter(row => row.success);
 
     if (failedRows.length > 0) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -152,7 +150,7 @@ const saveUploadedUsers = async (req, res, next) => {
     }
 
     const insertedUsers = await Promise.all(
-      validRows.map(async (row) => {
+      validRows.map(async row => {
         const randomPassword = generateRandomString(8);
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
@@ -162,13 +160,12 @@ const saveUploadedUsers = async (req, res, next) => {
             {
               department: {
                 $exists: false,
-              }
+              },
             },
             {
               department: null,
-            }
-
-          ]
+            },
+          ],
         });
         const newUser = await new models.userModel({
           ...row.data,
@@ -177,7 +174,13 @@ const saveUploadedUsers = async (req, res, next) => {
           role: ROLES.STAFF,
           permissions: DEFAULT_PERMISSIONS.STAFF_PERMISSIONS,
         }).save();
-        const response = await sendEmail(newUser.email, [], [], "Welcome to Herald Intra Calendar", getImportRegistrationHTML(newUser.username, newUser.email, randomPassword));
+        const response = await sendEmail(
+          newUser.email,
+          [],
+          [],
+          "Welcome to Herald Intra Calendar",
+          getImportRegistrationHTML(newUser.username, newUser.email, randomPassword)
+        );
         return {
           email: newUser.email,
           username: newUser.username,
@@ -192,7 +195,7 @@ const saveUploadedUsers = async (req, res, next) => {
     // export the email, username and password of success rows to excel again
     const wb = xlsx.utils.book_new();
     const wsUsers = xlsx.utils.json_to_sheet(
-      insertedUsers.map((data) => {
+      insertedUsers.map(data => {
         return {
           email: data.email,
           username: data.username,
@@ -203,10 +206,7 @@ const saveUploadedUsers = async (req, res, next) => {
     xlsx.utils.book_append_sheet(wb, wsUsers, "Uploaded Users");
 
     const reportFilename = `userupload-report-${new Date().getTime()}.xlsx`;
-    xlsx.writeFile(
-      wb,
-      `${__dirname}/../../uploads/userUploads/${reportFilename}`
-    );
+    xlsx.writeFile(wb, `${__dirname}/../../uploads/userUploads/${reportFilename}`);
 
     return res.status(StatusCodes.OK).json({
       success: true,
@@ -237,7 +237,6 @@ const getUserUploadReport = async (req, res, next) => {
     next(error);
   }
 };
-
 
 module.exports = {
   saveUploadedUsers,

@@ -178,20 +178,15 @@ const syncGoogleEvents = async (req, res, next) => {
     let localsyncedEvents = await models.syncedEventModel
       .find({ user: req.user.id })
       .populate("event");
-    let localSyncedEventIds = localsyncedEvents.map((synced) =>
-      synced.event?._id?.toString()
-    );
+    let localSyncedEventIds = localsyncedEvents.map(synced => synced.event?._id?.toString());
 
     // Step 2: Unsynced local events
     let localUnSyncedEvents = await models.eventModel.find({
       _id: { $nin: localSyncedEventIds },
-      $or: [
-        { createdBy: req.user.id },
-        { departments: { $in: [req.user.department.id] } },
-      ],
+      $or: [{ createdBy: req.user.id }, { departments: { $in: [req.user.department.id] } }],
     });
 
-    localUnSyncedEvents = localUnSyncedEvents.filter((event) => {
+    localUnSyncedEvents = localUnSyncedEvents.filter(event => {
       if (!event.personal) {
         return true;
       }
@@ -202,7 +197,7 @@ const syncGoogleEvents = async (req, res, next) => {
 
     // Step 3: Sync local to Google
     let insertedEvents = await Promise.all(
-      localUnSyncedEvents.map(async (event) => {
+      localUnSyncedEvents.map(async event => {
         try {
           const newEvent = await calendar.events.insert({
             calendarId: "primary",
@@ -265,22 +260,15 @@ const syncGoogleEvents = async (req, res, next) => {
 
     await removeLocallyDeletedGoogleEvents(req, calendarEvents);
 
-    let calendarEventsUnsynced = calendarEventsResponse.data.items.filter(
-      (event) => {
-        return !localsyncedEvents.some(
-          (local) => local.googleEventId === event.id
-        );
-      }
-    );
+    let calendarEventsUnsynced = calendarEventsResponse.data.items.filter(event => {
+      return !localsyncedEvents.some(local => local.googleEventId === event.id);
+    });
 
-    console.log(
-      "Google events to import locally:",
-      calendarEventsUnsynced.length
-    );
+    console.log("Google events to import locally:", calendarEventsUnsynced.length);
 
     // Step 5: Import Google -> Local DB
     let importedEvents = await Promise.all(
-      calendarEventsUnsynced.map(async (event) => {
+      calendarEventsUnsynced.map(async event => {
         if (!(event.summary && event.summary.length > 0)) {
           return "Skipped event with no summary";
         }
@@ -325,12 +313,7 @@ const syncGoogleEvents = async (req, res, next) => {
 
           return newSyncedEvent;
         } catch (error) {
-          console.error(
-            "Failed to import Google event:",
-            event.summary,
-            "-",
-            error.message
-          );
+          console.error("Failed to import Google event:", event.summary, "-", error.message);
           return { error: error.message, event };
         }
       })
@@ -351,22 +334,20 @@ const syncGoogleEvents = async (req, res, next) => {
 };
 
 const removeLocallyDeletedGoogleEvents = async (req, calendarEvents) => {
-  const googleEventIds = calendarEvents.map((event) => event.id);
+  const googleEventIds = calendarEvents.map(event => event.id);
 
   const syncedEvents = await models.syncedEventModel.find({
     user: req.user.id,
   });
 
   const eventsToDelete = syncedEvents.filter(
-    (synced) => !googleEventIds.includes(synced.googleEventId)
+    synced => !googleEventIds.includes(synced.googleEventId)
   );
 
   for (const entry of eventsToDelete) {
     await models.eventModel.findByIdAndDelete(entry.event);
     await models.syncedEventModel.findByIdAndDelete(entry._id);
-    console.log(
-      `Deleted local event ${entry.event} (missing in Google Calendar)`
-    );
+    console.log(`Deleted local event ${entry.event} (missing in Google Calendar)`);
   }
 };
 

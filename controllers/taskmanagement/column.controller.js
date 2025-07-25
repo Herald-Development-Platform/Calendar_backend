@@ -9,7 +9,7 @@ const createColumn = async (req, res, next) => {
     if (!title || !title.trim()) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
-        message: "Column title is required"
+        message: "Column title is required",
       });
     }
 
@@ -17,13 +17,13 @@ const createColumn = async (req, res, next) => {
     const existingColumn = await models.columnModel.findOne({
       title: title.trim(),
       createdBy: req.user._id,
-      isArchived: false
+      isArchived: false,
     });
 
     if (existingColumn) {
       return res.status(StatusCodes.CONFLICT).json({
         success: false,
-        message: "Column with this title already exists"
+        message: "Column with this title already exists",
       });
     }
 
@@ -35,13 +35,13 @@ const createColumn = async (req, res, next) => {
     const newColumn = await new models.columnModel({
       title: title.trim(),
       position: lastColumn ? lastColumn.position + 1 : 0,
-      createdBy: req.user._id
+      createdBy: req.user._id,
     }).save();
 
     return res.status(StatusCodes.CREATED).json({
       success: true,
       message: "Column created successfully",
-      data: newColumn
+      data: newColumn,
     });
   } catch (error) {
     next(error);
@@ -55,30 +55,28 @@ const getColumns = async (req, res, next) => {
 
     let query = { createdBy: req.user._id };
 
-    if (!includeArchived || includeArchived === 'false') {
+    if (!includeArchived || includeArchived === "false") {
       query.isArchived = false;
     }
 
-    let columns = await models.columnModel
-      .find(query)
-      .sort({ position: 1, createdAt: 1 });
+    let columns = await models.columnModel.find(query).sort({ position: 1, createdAt: 1 });
 
     // If includeTasks is true, populate with tasks
-    if (includeTasks === 'true') {
+    if (includeTasks === "true") {
       const columnsWithTasks = await Promise.all(
-        columns.map(async (column) => {
+        columns.map(async column => {
           const tasks = await models.taskModel
-            .find({ 
-              column: column._id, 
+            .find({
+              column: column._id,
               createdBy: req.user._id,
-              isArchived: false 
+              isArchived: false,
             })
-            .populate('labels', 'title position')
+            .populate("labels", "title position")
             .sort({ position: 1 });
 
           return {
             ...column.toObject(),
-            tasks: tasks
+            tasks: tasks,
           };
         })
       );
@@ -87,7 +85,7 @@ const getColumns = async (req, res, next) => {
         success: true,
         message: "Columns with tasks fetched successfully",
         data: columnsWithTasks,
-        count: columnsWithTasks.length
+        count: columnsWithTasks.length,
       });
     }
 
@@ -95,7 +93,7 @@ const getColumns = async (req, res, next) => {
       success: true,
       message: "Columns fetched successfully",
       data: columns,
-      count: columns.length
+      count: columns.length,
     });
   } catch (error) {
     next(error);
@@ -110,26 +108,26 @@ const getColumnById = async (req, res, next) => {
 
     const column = await models.columnModel.findOne({
       _id: id,
-      createdBy: req.user._id
+      createdBy: req.user._id,
     });
 
     if (!column) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
-        message: "Column not found"
+        message: "Column not found",
       });
     }
 
     let responseData = column.toObject();
 
-    if (includeTasks === 'true') {
+    if (includeTasks === "true") {
       const tasks = await models.taskModel
-        .find({ 
-          column: id, 
+        .find({
+          column: id,
           createdBy: req.user._id,
-          isArchived: false 
+          isArchived: false,
         })
-        .populate('labels', 'title position')
+        .populate("labels", "title position")
         .sort({ position: 1 });
 
       responseData.tasks = tasks;
@@ -138,7 +136,7 @@ const getColumnById = async (req, res, next) => {
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Column fetched successfully",
-      data: responseData
+      data: responseData,
     });
   } catch (error) {
     next(error);
@@ -153,13 +151,13 @@ const updateColumn = async (req, res, next) => {
 
     const column = await models.columnModel.findOne({
       _id: id,
-      createdBy: req.user._id
+      createdBy: req.user._id,
     });
 
     if (!column) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
-        message: "Column not found"
+        message: "Column not found",
       });
     }
 
@@ -169,13 +167,13 @@ const updateColumn = async (req, res, next) => {
         title: title.trim(),
         createdBy: req.user._id,
         isArchived: false,
-        _id: { $ne: id }
+        _id: { $ne: id },
       });
 
       if (existingColumn) {
         return res.status(StatusCodes.CONFLICT).json({
           success: false,
-          message: "Column with this title already exists"
+          message: "Column with this title already exists",
         });
       }
     }
@@ -184,16 +182,12 @@ const updateColumn = async (req, res, next) => {
     if (title) updateData.title = title.trim();
     if (position !== undefined) updateData.position = position;
 
-    const updatedColumn = await models.columnModel.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    );
+    const updatedColumn = await models.columnModel.findByIdAndUpdate(id, updateData, { new: true });
 
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Column updated successfully",
-      data: updatedColumn
+      data: updatedColumn,
     });
   } catch (error) {
     next(error);
@@ -207,13 +201,13 @@ const toggleArchiveColumn = async (req, res, next) => {
 
     const column = await models.columnModel.findOne({
       _id: id,
-      createdBy: req.user._id
+      createdBy: req.user._id,
     });
 
     if (!column) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
-        message: "Column not found"
+        message: "Column not found",
       });
     }
 
@@ -221,10 +215,10 @@ const toggleArchiveColumn = async (req, res, next) => {
     if (!column.isArchived) {
       await models.taskModel.updateMany(
         { column: id, createdBy: req.user._id },
-        { 
+        {
           isArchived: true,
           archivedAt: new Date(),
-          archivedBy: req.user._id
+          archivedBy: req.user._id,
         }
       );
     }
@@ -237,8 +231,8 @@ const toggleArchiveColumn = async (req, res, next) => {
 
     return res.status(StatusCodes.OK).json({
       success: true,
-      message: `Column ${updatedColumn.isArchived ? 'archived' : 'unarchived'} successfully`,
-      data: updatedColumn
+      message: `Column ${updatedColumn.isArchived ? "archived" : "unarchived"} successfully`,
+      data: updatedColumn,
     });
   } catch (error) {
     next(error);
@@ -252,26 +246,26 @@ const deleteColumn = async (req, res, next) => {
 
     const column = await models.columnModel.findOne({
       _id: id,
-      createdBy: req.user._id
+      createdBy: req.user._id,
     });
 
     if (!column) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
-        message: "Column not found"
+        message: "Column not found",
       });
     }
 
     // Check if column has tasks
     const tasksInColumn = await models.taskModel.countDocuments({
       column: id,
-      createdBy: req.user._id
+      createdBy: req.user._id,
     });
 
     if (tasksInColumn > 0) {
       return res.status(StatusCodes.CONFLICT).json({
         success: false,
-        message: `Cannot delete column. It contains ${tasksInColumn} task(s). Archive it instead or move tasks to another column.`
+        message: `Cannot delete column. It contains ${tasksInColumn} task(s). Archive it instead or move tasks to another column.`,
       });
     }
 
@@ -280,7 +274,7 @@ const deleteColumn = async (req, res, next) => {
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Column deleted successfully",
-      data: { deletedId: id }
+      data: { deletedId: id },
     });
   } catch (error) {
     next(error);
@@ -295,20 +289,20 @@ const reorderColumns = async (req, res, next) => {
     if (!Array.isArray(columnIds) || columnIds.length === 0) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
-        message: "Column IDs array is required"
+        message: "Column IDs array is required",
       });
     }
 
     // Verify all columns belong to the user
     const columns = await models.columnModel.find({
       _id: { $in: columnIds },
-      createdBy: req.user._id
+      createdBy: req.user._id,
     });
 
     if (columns.length !== columnIds.length) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
-        message: "Some columns not found or unauthorized"
+        message: "Some columns not found or unauthorized",
       });
     }
 
@@ -327,7 +321,7 @@ const reorderColumns = async (req, res, next) => {
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Columns reordered successfully",
-      data: updatedColumns
+      data: updatedColumns,
     });
   } catch (error) {
     next(error);
@@ -341,27 +335,27 @@ const getColumnStats = async (req, res, next) => {
 
     const column = await models.columnModel.findOne({
       _id: id,
-      createdBy: req.user._id
+      createdBy: req.user._id,
     });
 
     if (!column) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
-        message: "Column not found"
+        message: "Column not found",
       });
     }
 
     const totalTasks = await models.taskModel.countDocuments({
       column: id,
       createdBy: req.user._id,
-      isArchived: false
+      isArchived: false,
     });
 
     const completedTasks = await models.taskModel.countDocuments({
       column: id,
       createdBy: req.user._id,
       isArchived: false,
-      isCompleted: true
+      isCompleted: true,
     });
 
     const overdueTasks = await models.taskModel.countDocuments({
@@ -369,7 +363,7 @@ const getColumnStats = async (req, res, next) => {
       createdBy: req.user._id,
       isArchived: false,
       isCompleted: false,
-      dueDate: { $lt: new Date() }
+      dueDate: { $lt: new Date() },
     });
 
     return res.status(StatusCodes.OK).json({
@@ -382,9 +376,9 @@ const getColumnStats = async (req, res, next) => {
           completedTasks,
           pendingTasks: totalTasks - completedTasks,
           overdueTasks,
-          completionRate: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
-        }
-      }
+          completionRate: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -399,5 +393,5 @@ module.exports = {
   toggleArchiveColumn,
   deleteColumn,
   reorderColumns,
-  getColumnStats
+  getColumnStats,
 };

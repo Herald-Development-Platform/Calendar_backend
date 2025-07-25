@@ -1,4 +1,4 @@
-const departmentModel = require('./department.model');
+const departmentModel = require("./department.model");
 const eventModel = require("./event.model");
 const userModel = require("./user.model");
 const departmentRequestModel = require("./departmentRequest.model");
@@ -13,17 +13,17 @@ const taskModel = require("./taskmanagement/task.model");
 const commentModel = require("./taskmanagement/comment.model");
 
 module.exports = {
-    departmentModel,
-    eventModel,
-    userModel,
-    departmentRequestModel,
-    notificationModel,
-    locationModel,
-    blockModel,
-    syncedEventModel,
-    semesterModel,
-    columnModel,
-    labelModel,
-    taskModel,
-    commentModel,
-}
+  departmentModel,
+  eventModel,
+  userModel,
+  departmentRequestModel,
+  notificationModel,
+  locationModel,
+  blockModel,
+  syncedEventModel,
+  semesterModel,
+  columnModel,
+  labelModel,
+  taskModel,
+  commentModel,
+};

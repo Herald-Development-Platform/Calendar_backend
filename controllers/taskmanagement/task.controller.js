@@ -5,13 +5,10 @@ const hasTaskAccess = (task, userId) => {
   console.log("Checking task access for user:", userId);
   console.log("Task details:", task);
 
-  console.log(
-    "has access:",
-    task?.createdBy?.toString() === userId?.toString()
-  );
+  console.log("has access:", task?.createdBy?.toString() === userId?.toString());
   return (
     task?.createdBy?._id?.toString() === userId?.toString() ||
-    task?.invitedUsers?.some((invitedId) => invitedId === userId)
+    task?.invitedUsers?.some(invitedId => invitedId === userId)
   );
 };
 
@@ -126,7 +123,7 @@ const createTask = async (req, res, next) => {
   }
 };
 
-const   getTasks = async (req, res, next) => {
+const getTasks = async (req, res, next) => {
   try {
     const {
       column,
@@ -365,7 +362,7 @@ const updateTask = async (req, res, next) => {
           message: "Some labels not found or unauthorized",
         });
       }
-      updateData.labels = userLabels.map((label) => label._id);
+      updateData.labels = userLabels.map(label => label._id);
     }
     // Validate dates
     if (updateData.startDate && updateData.dueDate) {
@@ -516,7 +513,7 @@ const updateTasksPostions = async (req, res, next) => {
     if (
       !Array.isArray(tasks) ||
       tasks.length === 0 ||
-      tasks.some((task) => !task._id || task.position === undefined)
+      tasks.some(task => !task._id || task.position === undefined)
     ) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
@@ -524,7 +521,7 @@ const updateTasksPostions = async (req, res, next) => {
       });
     }
 
-    const bulkOps = tasks.map((task) => ({
+    const bulkOps = tasks.map(task => ({
       updateOne: {
         filter: { _id: task._id, createdBy: req.user._id },
         update: { position: task.position },
@@ -556,15 +553,15 @@ const moveTask = async (req, res, next) => {
     // Update the moved task's column and position
     await models.taskModel.findByIdAndUpdate(
       taskId,
-      { 
-        column: newColumnId, 
-        position: newPosition 
+      {
+        column: newColumnId,
+        position: newPosition,
       },
       { new: true }
     );
 
     // Update positions for all affected tasks
-    const bulkOps = affectedTasks.map((task) => ({
+    const bulkOps = affectedTasks.map(task => ({
       updateOne: {
         filter: { _id: task._id, createdBy: req.user._id },
         update: { position: task.position },
@@ -583,8 +580,6 @@ const moveTask = async (req, res, next) => {
     next(error);
   }
 };
-
-
 
 module.exports = {
   createTask,

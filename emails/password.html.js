@@ -1,6 +1,5 @@
-
 const getForgetPasswordHTML = (username, OTP) => {
-    return `
+  return `
     <!doctypehtml>
     <html lang=en>
     <meta charset=UTF-8>
@@ -27,5 +26,5 @@ const getForgetPasswordHTML = (username, OTP) => {
 };
 
 module.exports = {
-    getForgetPasswordHTML,
+  getForgetPasswordHTML,
 };

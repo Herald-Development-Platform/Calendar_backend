@@ -1,19 +1,16 @@
-
 const { StatusCodes } = require("http-status-codes");
 const xlsx = require("xlsx");
 const fs = require("fs");
 const models = require("../../models/index.model");
 const { makePascalCase } = require("../../utils/string.utils");
 
-const extractDepartmentData = async ({
-  row,
-  sheetName,
-  rowIndex,
-  departments,
-}) => {
+const extractDepartmentData = async ({ row, sheetName, rowIndex, departments }) => {
   let rowValidated = {};
-  Object.keys(row).forEach((value) => {
-    let newKey = value.trim().toLowerCase().replaceAll(/[^a-zA-Z0-9]/ig, "");
+  Object.keys(row).forEach(value => {
+    let newKey = value
+      .trim()
+      .toLowerCase()
+      .replaceAll(/[^a-zA-Z0-9]/gi, "");
     switch (newKey) {
       case "departmentname":
       case "name":
@@ -49,7 +46,7 @@ const extractDepartmentData = async ({
     result.reason = "Couldn't read the 'code' of department!";
   }
 
-  departments.find((department) => {
+  departments.find(department => {
     if (department.name?.toLowerCase().trim() === result.data?.name?.toLowerCase().trim()) {
       result.reason = `Department with name '${result.data.name}' already exists!`;
       return true;
@@ -80,7 +77,7 @@ const saveUploadedDepartments = async (req, res, next) => {
     let data = [];
 
     const xlxsFile = xlsx.readFile(file.path);
-    xlxsFile.SheetNames.forEach((sheet_name) => {
+    xlxsFile.SheetNames.forEach(sheet_name => {
       let sheet_data = xlsx.utils.sheet_to_json(xlxsFile.Sheets[sheet_name]);
       sheet_data.forEach((excelRow, i) => {
         data.push({
@@ -92,21 +89,21 @@ const saveUploadedDepartments = async (req, res, next) => {
     });
 
     let departments = await models.departmentModel.find({});
-    departments = departments.map((department) => department.toObject());
+    departments = departments.map(department => department.toObject());
 
     let extracted = await Promise.all(
-      data.map((row) =>
+      data.map(row =>
         extractDepartmentData({
-            row: row.excelRow,
-            sheetName: row.sheetName,
-            rowIndex: row.rowIndex,
-            departments,
+          row: row.excelRow,
+          sheetName: row.sheetName,
+          rowIndex: row.rowIndex,
+          departments,
         })
       )
     );
-    
-    let failedRows = extracted.filter((row) => !row.success);
-    let validRows = extracted.filter((row) => row.success);
+
+    let failedRows = extracted.filter(row => !row.success);
+    let validRows = extracted.filter(row => row.success);
 
     if (failedRows.length > 0) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -117,20 +114,20 @@ const saveUploadedDepartments = async (req, res, next) => {
     }
 
     const insertedData = await Promise.all(
-      validRows.map(async (row) => {
+      validRows.map(async row => {
         let insertedDepartment = await new models.departmentModel({
-          ...(row.data),
+          ...row.data,
         }).save();
         return insertedDepartment.toObject();
       })
-     );
+    );
 
     fs.unlinkSync(file.path);
 
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Department file uploaded successfully",
-      data: insertedData
+      data: insertedData,
     });
   } catch (error) {
     console.log(error);
@@ -139,5 +136,5 @@ const saveUploadedDepartments = async (req, res, next) => {
 };
 
 module.exports = {
-    saveUploadedDepartments,
+  saveUploadedDepartments,
 };

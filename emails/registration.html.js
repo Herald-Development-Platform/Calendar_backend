@@ -1,5 +1,5 @@
 const getRegistrationHTML = (username, OTP, email) => {
-   return `
+  return `
      <!doctype html>
      <html lang="en">
        <meta charset="UTF-8">
@@ -95,10 +95,10 @@ const getRegistrationHTML = (username, OTP, email) => {
        </div>
      </html>
    `;
- };
- 
- const getImportRegistrationHTML = (username, email, password) => {
-   return `
+};
+
+const getImportRegistrationHTML = (username, email, password) => {
+  return `
      <!doctype html>
      <html lang="en">
        <meta charset="UTF-8">
@@ -197,10 +197,9 @@ const getRegistrationHTML = (username, OTP, email) => {
        </div>
      </html>
    `;
- };
- 
- module.exports = {
-   getRegistrationHTML,
-   getImportRegistrationHTML,
- };
- 
+};
+
+module.exports = {
+  getRegistrationHTML,
+  getImportRegistrationHTML,
+};
