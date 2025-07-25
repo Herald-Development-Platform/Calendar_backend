@@ -9,6 +9,7 @@ const {
   getArchivedTasks,
   updateTasksPostions,
   moveTask,
+  getInvitedTasks,
 } = require("../../controllers/taskmanagement/task.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 
@@ -25,6 +26,8 @@ tasksRouter.route("/move").put(verifyToken, moveTask); // Route to move tasks
 tasksRouter.route("/column/:columnId").get(verifyToken, getTasksByColumn); // Assuming this gets tasks by column
 
 tasksRouter.route("/archive").get(verifyToken, getArchivedTasks);
+
+tasksRouter.route("/invited").get(verifyToken, getInvitedTasks); // Route to get tasks where the user is invited
 
 tasksRouter.route("/:id/archive").put(verifyToken, archiveTask);
 
