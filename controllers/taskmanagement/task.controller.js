@@ -1,5 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 const models = require("../../models/index.model");
+const { createNotification } = require("../notification/notification.controller");
 
 const hasTaskAccess = (task, userId) => {
   console.log("Checking task access for user:", userId);
@@ -364,6 +365,44 @@ const updateTask = async (req, res, next) => {
       }
       updateData.labels = userLabels.map(label => label._id);
     }
+
+    // Verify invited users if being updated and identify newly invited users
+    let newlyInvitedUsers = [];
+    if (updateData.invitedUsers) {
+      // Extract user IDs from the updateData (could be objects or strings)
+      const updateUserIds = updateData.invitedUsers.map(user => 
+        typeof user === 'object' && user._id ? user._id.toString() : user.toString()
+      );
+
+      const existingUsers = await models.userModel.find({
+        _id: { $in: updateUserIds },
+      });
+
+      if (existingUsers.length !== updateUserIds.length) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message: "Some invited users not found",
+        });
+      }
+
+      // Find newly invited users (users not in the original invitedUsers array)
+      // Ensure we're comparing string representations of ObjectIds
+      const currentInvitedUsers = task.invitedUsers.map(userId => 
+        userId._id ? userId._id.toString() : userId.toString()
+      );
+      
+      console.log("Current invited users:", currentInvitedUsers);
+      console.log("Update invited users (IDs):", updateUserIds);
+      
+      newlyInvitedUsers = updateUserIds.filter(
+        userId => !currentInvitedUsers.includes(userId.toString())
+      );
+      
+      console.log("Newly invited users:", newlyInvitedUsers);
+
+      // Update the updateData to contain only user IDs for the database update
+      updateData.invitedUsers = updateUserIds;
+    }
     // Validate dates
     if (updateData.startDate && updateData.dueDate) {
       const startDate = new Date(updateData.startDate);
@@ -415,6 +454,24 @@ const updateTask = async (req, res, next) => {
         message: "You don't have access to this task",
       });
     }
+
+    // Send notifications to newly invited users
+    if (newlyInvitedUsers.length > 0) {
+      for (const userId of newlyInvitedUsers) {
+        try {
+          await createNotification({
+            user: userId,
+            contextId: updatedTask._id,
+            context: "task_invitation",
+            message: `You have been invited to collaborate on task: "${updatedTask.title}" by ${req.user.username}`,
+          });
+        } catch (notificationError) {
+          console.error(`Failed to send notification to user ${userId}:`, notificationError);
+          // Continue with other notifications even if one fails
+        }
+      }
+    }
+
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Task updated successfully",
