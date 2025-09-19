@@ -6,11 +6,15 @@ const hasTaskAccess = (task, userId) => {
   console.log("Checking task access for user:", userId);
   console.log("Task details:", task);
 
-  console.log("has access:", task?.createdBy?.toString() === userId?.toString());
-  return (
-    task?.createdBy?._id?.toString() === userId?.toString() ||
-    task?.invitedUsers?.some(invitedId => invitedId === userId)
+  const isOwner = task?.createdBy?._id?.toString() === userId?.toString() || 
+                  task?.createdBy?.toString() === userId?.toString();
+  const isInvited = task?.invitedUsers?.some(invitedId => 
+    (invitedId._id?.toString() === userId?.toString()) || 
+    (invitedId.toString() === userId?.toString())
   );
+
+  console.log("has access:", isOwner || isInvited);
+  return isOwner || isInvited;
 };
 
 const createTask = async (req, res, next) => {
@@ -325,103 +329,148 @@ const updateTask = async (req, res, next) => {
       });
     }
 
-    // Check if user is owner (only owner can update main task details)
-    if (task.createdBy.toString() !== req.user._id.toString()) {
+    // Check if user has access to the task
+    const isOwner = task.createdBy.toString() === req.user._id.toString();
+    const isInvited = task.invitedUsers.some(
+      invitedId => invitedId.toString() === req.user._id.toString()
+    );
+
+    if (!isOwner && !isInvited) {
       return res.status(StatusCodes.FORBIDDEN).json({
         success: false,
-        message: "Only task owner can update task details",
+        message: "You don't have access to this task",
       });
     }
 
-    // Verify column if being updated
-    if (updateData.column) {
-      const targetColumn = await models.columnModel.findOne({
-        _id: updateData.column,
-        createdBy: req.user._id,
-        isArchived: false,
-      });
-
-      if (!targetColumn) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
+    // Define fields that invited users can update
+    const invitedUserAllowedFields = ['isCompleted', 'checklist'];
+    
+    // If user is invited (not owner), restrict the fields they can update
+    if (!isOwner && isInvited) {
+      const updateFields = Object.keys(updateData);
+      const unauthorizedFields = updateFields.filter(
+        field => !invitedUserAllowedFields.includes(field)
+      );
+      
+      if (unauthorizedFields.length > 0) {
+        return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
-          message: "Column not found or unauthorized",
+          message: `Invited users can only update: ${invitedUserAllowedFields.join(', ')}`,
         });
       }
     }
 
-    // Verify labels if being updated
-    if (updateData.labels) {
-      const userLabels = await models.labelModel.find({
-        _id: { $in: updateData.labels },
-        createdBy: req.user._id,
-        isArchived: false,
-      });
-
-      if (userLabels.length !== updateData.labels.length) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          success: false,
-          message: "Some labels not found or unauthorized",
-        });
-      }
-      updateData.labels = userLabels.map(label => label._id);
-    }
-
-    // Verify invited users if being updated and identify newly invited users
+    // Initialize newly invited users array
     let newlyInvitedUsers = [];
-    if (updateData.invitedUsers) {
-      // Extract user IDs from the updateData (could be objects or strings)
-      const updateUserIds = updateData.invitedUsers.map(user => 
-        typeof user === 'object' && user._id ? user._id.toString() : user.toString()
-      );
 
-      const existingUsers = await models.userModel.find({
-        _id: { $in: updateUserIds },
+    // Only validate these fields if user is the owner
+    if (isOwner) {
+      // Verify column if being updated
+      if (updateData.column) {
+        const targetColumn = await models.columnModel.findOne({
+          _id: updateData.column,
+          createdBy: req.user._id,
+          isArchived: false,
+        });
+
+        if (!targetColumn) {
+          return res.status(StatusCodes.BAD_REQUEST).json({
+            success: false,
+            message: "Column not found or unauthorized",
+          });
+        }
+      }
+
+      // Verify labels if being updated
+      if (updateData.labels) {
+        const userLabels = await models.labelModel.find({
+          _id: { $in: updateData.labels },
+          createdBy: req.user._id,
+          isArchived: false,
+        });
+
+        if (userLabels.length !== updateData.labels.length) {
+          return res.status(StatusCodes.BAD_REQUEST).json({
+            success: false,
+            message: "Some labels not found or unauthorized",
+          });
+        }
+        updateData.labels = userLabels.map(label => label._id);
+      }
+
+      // Verify invited users if being updated and identify newly invited users
+      if (updateData.invitedUsers) {
+        // Extract user IDs from the updateData (could be objects or strings)
+        const updateUserIds = updateData.invitedUsers.map(user => 
+          typeof user === 'object' && user._id ? user._id.toString() : user.toString()
+        );
+
+        const existingUsers = await models.userModel.find({
+          _id: { $in: updateUserIds },
+        });
+
+        if (existingUsers.length !== updateUserIds.length) {
+          return res.status(StatusCodes.BAD_REQUEST).json({
+            success: false,
+            message: "Some invited users not found",
+          });
+        }
+
+        // Find newly invited users (users not in the original invitedUsers array)
+        // Ensure we're comparing string representations of ObjectIds
+        const currentInvitedUsers = task.invitedUsers.map(userId => 
+          userId._id ? userId._id.toString() : userId.toString()
+        );
+        
+        console.log("Current invited users:", currentInvitedUsers);
+        console.log("Update invited users (IDs):", updateUserIds);
+        
+        newlyInvitedUsers = updateUserIds.filter(
+          userId => !currentInvitedUsers.includes(userId.toString())
+        );
+        
+        console.log("Newly invited users:", newlyInvitedUsers);
+
+        // Update the updateData to contain only user IDs for the database update
+        updateData.invitedUsers = updateUserIds;
+      }
+
+      // Validate dates
+      if (updateData.startDate && updateData.dueDate) {
+        const startDate = new Date(updateData.startDate);
+        const dueDate = new Date(updateData.dueDate);
+
+        if (startDate > dueDate) {
+          return res.status(StatusCodes.BAD_REQUEST).json({
+            success: false,
+            message: "Start date cannot be after due date",
+          });
+        }
+      }
+    }
+
+    // Handle checklist updates - allow both owners and invited users
+    let checklistData;
+    if (updateData.checklist) {
+      checklistData = updateData.checklist.map(item => {
+        const checklistItem = {
+          text: item.text ? item.text.trim() : item.text,
+          isCompleted: item.isCompleted || false,
+        };
+        
+        // If an invited user is completing a checklist item, add completedBy
+        if (item.isCompleted && !isOwner) {
+          checklistItem.completedBy = req.user._id;
+        }
+        
+        return checklistItem;
       });
-
-      if (existingUsers.length !== updateUserIds.length) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          success: false,
-          message: "Some invited users not found",
-        });
-      }
-
-      // Find newly invited users (users not in the original invitedUsers array)
-      // Ensure we're comparing string representations of ObjectIds
-      const currentInvitedUsers = task.invitedUsers.map(userId => 
-        userId._id ? userId._id.toString() : userId.toString()
-      );
-      
-      console.log("Current invited users:", currentInvitedUsers);
-      console.log("Update invited users (IDs):", updateUserIds);
-      
-      newlyInvitedUsers = updateUserIds.filter(
-        userId => !currentInvitedUsers.includes(userId.toString())
-      );
-      
-      console.log("Newly invited users:", newlyInvitedUsers);
-
-      // Update the updateData to contain only user IDs for the database update
-      updateData.invitedUsers = updateUserIds;
-    }
-    // Validate dates
-    if (updateData.startDate && updateData.dueDate) {
-      const startDate = new Date(updateData.startDate);
-      const dueDate = new Date(updateData.dueDate);
-
-      if (startDate > dueDate) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          success: false,
-          message: "Start date cannot be after due date",
-        });
-      }
     }
 
-    const checklistData = updateData.checklist?.map(item => {
-      return {
-        text: item.text.trim(),
-        isCompleted: item.isCompleted || false,
-      };
-    });
+    // Handle task completion - allow both owners and invited users
+    if (updateData.isCompleted && !isOwner) {
+      updateData.completedBy = req.user._id;
+    }
     // Update task
     const updatedTask = await models.taskModel
       .findByIdAndUpdate(
@@ -445,13 +494,6 @@ const updateTask = async (req, res, next) => {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
         message: "Task not found",
-      });
-    }
-    // Check access
-    if (!hasTaskAccess(updatedTask, req.user._id)) {
-      return res.status(StatusCodes.FORBIDDEN).json({
-        success: false,
-        message: "You don't have access to this task",
       });
     }
 
